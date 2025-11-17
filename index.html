@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Check - Porównanie Wydruków</title>
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+        }
+
+        .upload-box:hover {
+            border-color: #764ba2;
+            background: #f0f1ff;
+        }
+
+        .upload-box h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-box input[type="file"] {
+            display: none;
+        }
+
+        .upload-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .upload-label:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .preview-img.active {
+            display: block;
+        }
+
+        .compare-btn {
+            display: block;
+            width: 300px;
+            margin: 20px auto;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .compare-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .compare-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-section {
+            display: none;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+        }
+
+        .progress-section.active {
+            display: block;
+        }
+
+        .progress-item {
+            margin: 10px 0;
+        }
+
+        .progress-label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 25px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .result-box {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .result-box h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .text-content {
+            white-space: pre-wrap;
+            font-family: monospace;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .diff-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff9e6;
+            border-radius: 10px;
+            border: 2px solid #ffc107;
+        }
+
+        .diff-section h3 {
+            color: #f57c00;
+            margin-bottom: 15px;
+        }
+
+        .diff-content {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .diff-line {
+            padding: 3px 5px;
+            margin: 2px 0;
+            font-family: monospace;
+            line-height: 1.6;
+        }
+
+        .diff-added {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .diff-removed {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+
+        .diff-unchanged {
+            color: #666;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status-success {
+            background: #c8e6c9;
+            color: #2e7d32;
+            border: 2px solid #2e7d32;
+        }
+
+        .status-warning {
+            background: #fff9c4;
+            color: #f57c00;
+            border: 2px solid #f57c00;
+        }
+
+        .status-error {
+            background: #ffcdd2;
+            color: #c62828;
+            border: 2px solid #c62828;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .upload-section,
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Text Check</h1>
+        <p class="subtitle">Porównaj tekst na wydrubach - Proof vs Maszyna</p>
+
+        <div class="upload-section">
+            <div class="upload-box">
+                <h3>📄 Proof (Wydruk komputerowy)</h3>
+                <label for="proof-upload" class="upload-label">Wybierz zdjęcie</label>
+                <input type="file" id="proof-upload" accept="image/*">
+                <img id="proof-preview" class="preview-img" alt="Proof preview">
+            </div>
+
+            <div class="upload-box">
+                <h3>🖨️ Wydruk z maszyny</h3>
+                <label for="machine-upload" class="upload-label">Wybierz zdjęcie</label>
+                <input type="file" id="machine-upload" accept="image/*">
+                <img id="machine-preview" class="preview-img" alt="Machine preview">
+            </div>
+        </div>
+
+        <button id="compare-btn" class="compare-btn" disabled>Porównaj wydruki</button>
+
+        <div id="progress-section" class="progress-section">
+            <div class="progress-item">
+                <span class="progress-label">Przetwarzanie Proof:</span>
+                <div class="progress-bar-container">
+                    <div id="proof-progress" class="progress-bar">0%</div>
+                </div>
+            </div>
+            <div class="progress-item">
+                <span class="progress-label">Przetwarzanie wydruku z maszyny:</span>
+                <div class="progress-bar-container">
+                    <div id="machine-progress" class="progress-bar">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="results-section" class="results-section">
+            <div id="status-message"></div>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-number" id="stat-proof-chars">0</div>
+                    <div class="stat-label">Znaków w Proof</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="stat-machine-chars">0</div>
+                    <div class="stat-label">Znaków w Wydruku</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="stat-differences">0</div>
+                    <div class="stat-label">Różnic</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="stat-similarity">0%</div>
+                    <div class="stat-label">Podobieństwo</div>
+                </div>
+            </div>
+
+            <div class="results-grid">
+                <div class="result-box">
+                    <h3>📄 Tekst z Proof</h3>
+                    <div id="proof-text" class="text-content"></div>
+                </div>
+                <div class="result-box">
+                    <h3>🖨️ Tekst z maszyny</h3>
+                    <div id="machine-text" class="text-content"></div>
+                </div>
+            </div>
+
+            <div class="diff-section">
+                <h3>⚠️ Wykryte różnice</h3>
+                <div id="diff-content" class="diff-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let proofImage = null;
+        let machineImage = null;
+        let proofText = '';
+        let machineText = '';
+
+        // Elements
+        const proofUpload = document.getElementById('proof-upload');
+        const machineUpload = document.getElementById('machine-upload');
+        const proofPreview = document.getElementById('proof-preview');
+        const machinePreview = document.getElementById('machine-preview');
+        const compareBtn = document.getElementById('compare-btn');
+        const progressSection = document.getElementById('progress-section');
+        const resultsSection = document.getElementById('results-section');
+        const proofProgress = document.getElementById('proof-progress');
+        const machineProgress = document.getElementById('machine-progress');
+
+        // Event listeners
+        proofUpload.addEventListener('change', (e) => handleImageUpload(e, 'proof'));
+        machineUpload.addEventListener('change', (e) => handleImageUpload(e, 'machine'));
+        compareBtn.addEventListener('click', compareImages);
+
+        function handleImageUpload(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (type === 'proof') {
+                    proofImage = e.target.result;
+                    proofPreview.src = proofImage;
+                    proofPreview.classList.add('active');
+                } else {
+                    machineImage = e.target.result;
+                    machinePreview.src = machineImage;
+                    machinePreview.classList.add('active');
+                }
+
+                // Enable compare button if both images are loaded
+                if (proofImage && machineImage) {
+                    compareBtn.disabled = false;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function compareImages() {
+            compareBtn.disabled = true;
+            progressSection.classList.add('active');
+            resultsSection.classList.remove('active');
+
+            try {
+                // Process both images
+                proofText = await performOCR(proofImage, 'proof');
+                machineText = await performOCR(machineImage, 'machine');
+
+                // Compare texts
+                displayResults();
+                compareBtn.disabled = false;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Wystąpił błąd podczas przetwarzania zdjęć: ' + error.message);
+                compareBtn.disabled = false;
+                progressSection.classList.remove('active');
+            }
+        }
+
+        async function performOCR(imageData, type) {
+            const progressBar = type === 'proof' ? proofProgress : machineProgress;
+
+            const worker = await Tesseract.createWorker('pol', 1, {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        const progress = Math.round(m.progress * 100);
+                        progressBar.style.width = progress + '%';
+                        progressBar.textContent = progress + '%';
+                    }
+                }
+            });
+
+            const { data: { text } } = await worker.recognize(imageData);
+            await worker.terminate();
+
+            progressBar.style.width = '100%';
+            progressBar.textContent = '100%';
+
+            return text.trim();
+        }
+
+        function displayResults() {
+            // Show results section
+            resultsSection.classList.add('active');
+
+            // Display texts
+            document.getElementById('proof-text').textContent = proofText;
+            document.getElementById('machine-text').textContent = machineText;
+
+            // Calculate stats
+            const proofChars = proofText.length;
+            const machineChars = machineText.length;
+
+            // Normalize texts for comparison (remove extra whitespace)
+            const normalizedProof = normalizeText(proofText);
+            const normalizedMachine = normalizeText(machineText);
+
+            // Calculate differences
+            const diff = calculateDiff(normalizedProof, normalizedMachine);
+            const similarity = calculateSimilarity(normalizedProof, normalizedMachine);
+
+            // Update stats
+            document.getElementById('stat-proof-chars').textContent = proofChars;
+            document.getElementById('stat-machine-chars').textContent = machineChars;
+            document.getElementById('stat-differences').textContent = diff.differences;
+            document.getElementById('stat-similarity').textContent = similarity + '%';
+
+            // Display diff
+            displayDiff(diff);
+
+            // Status message
+            const statusDiv = document.getElementById('status-message');
+            if (similarity >= 95) {
+                statusDiv.className = 'status-message status-success';
+                statusDiv.textContent = '✅ Wydruki są praktycznie identyczne! Możesz kontynuować drukowanie.';
+            } else if (similarity >= 85) {
+                statusDiv.className = 'status-message status-warning';
+                statusDiv.textContent = '⚠️ Wykryto niewielkie różnice. Sprawdź poniżej szczegóły.';
+            } else {
+                statusDiv.className = 'status-message status-error';
+                statusDiv.textContent = '❌ Wykryto znaczące różnice! Sprawdź dokładnie wydruki.';
+            }
+        }
+
+        function normalizeText(text) {
+            // Remove extra whitespace and normalize
+            return text.replace(/\s+/g, ' ').trim();
+        }
+
+        function calculateSimilarity(text1, text2) {
+            const longer = text1.length > text2.length ? text1 : text2;
+            const shorter = text1.length > text2.length ? text2 : text1;
+
+            if (longer.length === 0) return 100;
+
+            const editDistance = levenshteinDistance(longer, shorter);
+            return Math.round((1 - editDistance / longer.length) * 100);
+        }
+
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+
+            for (let i = 0; i <= str2.length; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= str1.length; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= str2.length; i++) {
+                for (let j = 1; j <= str1.length; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+
+            return matrix[str2.length][str1.length];
+        }
+
+        function calculateDiff(text1, text2) {
+            // Split into words for better comparison
+            const words1 = text1.split(/\s+/);
+            const words2 = text2.split(/\s+/);
+
+            const diff = [];
+            let differences = 0;
+
+            const maxLen = Math.max(words1.length, words2.length);
+
+            for (let i = 0; i < maxLen; i++) {
+                const word1 = words1[i] || '';
+                const word2 = words2[i] || '';
+
+                if (word1 === word2) {
+                    diff.push({ type: 'unchanged', text: word1 });
+                } else {
+                    if (word1) {
+                        diff.push({ type: 'removed', text: word1 });
+                        differences++;
+                    }
+                    if (word2) {
+                        diff.push({ type: 'added', text: word2 });
+                        differences++;
+                    }
+                }
+            }
+
+            return { diff, differences };
+        }
+
+        function displayDiff(diffResult) {
+            const diffContainer = document.getElementById('diff-content');
+            diffContainer.innerHTML = '';
+
+            if (diffResult.differences === 0) {
+                diffContainer.innerHTML = '<p style="color: green; font-weight: bold;">✅ Nie wykryto żadnych różnic!</p>';
+                return;
+            }
+
+            diffResult.diff.forEach(item => {
+                const span = document.createElement('span');
+                span.className = `diff-line diff-${item.type}`;
+
+                if (item.type === 'removed') {
+                    span.textContent = `- ${item.text}`;
+                } else if (item.type === 'added') {
+                    span.textContent = `+ ${item.text}`;
+                } else {
+                    span.textContent = item.text;
+                }
+
+                diffContainer.appendChild(span);
+                diffContainer.appendChild(document.createTextNode(' '));
+            });
+        }
+    </script>
+</body>
+</html>

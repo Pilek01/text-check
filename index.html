@@ -330,6 +330,153 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Camera Modal Styles */
+        .camera-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .camera-modal.active {
+            display: flex;
+        }
+
+        .camera-container {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .camera-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .camera-header h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .camera-hint {
+            color: #f57c00;
+            font-size: 0.9em;
+            padding: 10px;
+            background: #fff9e6;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #camera-video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #overlay-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .camera-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .camera-btn-capture {
+            background: #4caf50;
+            color: white;
+        }
+
+        .camera-btn-capture:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .camera-btn-cancel {
+            background: #f44336;
+            color: white;
+        }
+
+        .camera-btn-cancel:hover {
+            background: #da190b;
+            transform: scale(1.05);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .camera-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #4caf50;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .camera-label:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .opacity-control {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .opacity-control label {
+            display: block;
+            margin-bottom: 8px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .opacity-slider {
+            width: 80%;
+            max-width: 400px;
+        }
     </style>
 </head>
 <body>
@@ -340,14 +487,20 @@
         <div class="upload-section">
             <div class="upload-box">
                 <h3>📄 Proof (Wydruk komputerowy)</h3>
-                <label for="proof-upload" class="upload-label">Wybierz zdjęcie</label>
+                <div class="button-group">
+                    <label for="proof-upload" class="upload-label">📁 Wybierz zdjęcie</label>
+                    <button id="proof-camera-btn" class="camera-label">📷 Zrób zdjęcie</button>
+                </div>
                 <input type="file" id="proof-upload" accept="image/*">
                 <img id="proof-preview" class="preview-img" alt="Proof preview">
             </div>
 
             <div class="upload-box">
                 <h3>🖨️ Wydruk z maszyny</h3>
-                <label for="machine-upload" class="upload-label">Wybierz zdjęcie</label>
+                <div class="button-group">
+                    <label for="machine-upload" class="upload-label">📁 Wybierz zdjęcie</label>
+                    <button id="machine-camera-btn" class="camera-label">📷 Zrób zdjęcie</button>
+                </div>
                 <input type="file" id="machine-upload" accept="image/*">
                 <img id="machine-preview" class="preview-img" alt="Machine preview">
             </div>
@@ -410,12 +563,41 @@
         </div>
     </div>
 
+    <!-- Camera Modal -->
+    <div id="camera-modal" class="camera-modal">
+        <div class="camera-container">
+            <div class="camera-header">
+                <h2 id="camera-title">📷 Zrób zdjęcie</h2>
+                <div id="camera-hint" class="camera-hint" style="display: none;">
+                    💡 Spróbuj dopasować perspektywę do pierwszego zdjęcia używając półprzezroczystego podglądu
+                </div>
+            </div>
+
+            <div class="opacity-control" id="opacity-control" style="display: none;">
+                <label for="overlay-opacity">Przezroczystość podglądu pierwszego zdjęcia: <span id="opacity-value">50%</span></label>
+                <input type="range" id="overlay-opacity" class="opacity-slider" min="0" max="100" value="50">
+            </div>
+
+            <div class="video-wrapper">
+                <video id="camera-video" autoplay playsinline></video>
+                <canvas id="overlay-canvas"></canvas>
+            </div>
+
+            <div class="camera-controls">
+                <button id="capture-btn" class="camera-btn camera-btn-capture">📸 Zrób zdjęcie</button>
+                <button id="cancel-camera-btn" class="camera-btn camera-btn-cancel">❌ Anuluj</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // State
         let proofImage = null;
         let machineImage = null;
         let proofText = '';
         let machineText = '';
+        let currentCameraType = null;
+        let cameraStream = null;
 
         // Elements
         const proofUpload = document.getElementById('proof-upload');
@@ -428,10 +610,28 @@
         const proofProgress = document.getElementById('proof-progress');
         const machineProgress = document.getElementById('machine-progress');
 
+        // Camera elements
+        const proofCameraBtn = document.getElementById('proof-camera-btn');
+        const machineCameraBtn = document.getElementById('machine-camera-btn');
+        const cameraModal = document.getElementById('camera-modal');
+        const cameraVideo = document.getElementById('camera-video');
+        const overlayCanvas = document.getElementById('overlay-canvas');
+        const captureBtn = document.getElementById('capture-btn');
+        const cancelCameraBtn = document.getElementById('cancel-camera-btn');
+        const cameraHint = document.getElementById('camera-hint');
+        const opacityControl = document.getElementById('opacity-control');
+        const overlayOpacity = document.getElementById('overlay-opacity');
+        const opacityValue = document.getElementById('opacity-value');
+
         // Event listeners
         proofUpload.addEventListener('change', (e) => handleImageUpload(e, 'proof'));
         machineUpload.addEventListener('change', (e) => handleImageUpload(e, 'machine'));
         compareBtn.addEventListener('click', compareImages);
+        proofCameraBtn.addEventListener('click', () => openCamera('proof'));
+        machineCameraBtn.addEventListener('click', () => openCamera('machine'));
+        captureBtn.addEventListener('click', capturePhoto);
+        cancelCameraBtn.addEventListener('click', closeCamera);
+        overlayOpacity.addEventListener('input', updateOverlayOpacity);
 
         function handleImageUpload(event, type) {
             const file = event.target.files[0];
@@ -439,22 +639,142 @@
 
             const reader = new FileReader();
             reader.onload = (e) => {
-                if (type === 'proof') {
-                    proofImage = e.target.result;
-                    proofPreview.src = proofImage;
-                    proofPreview.classList.add('active');
-                } else {
-                    machineImage = e.target.result;
-                    machinePreview.src = machineImage;
-                    machinePreview.classList.add('active');
-                }
-
-                // Enable compare button if both images are loaded
-                if (proofImage && machineImage) {
-                    compareBtn.disabled = false;
-                }
+                setImage(type, e.target.result);
             };
             reader.readAsDataURL(file);
+        }
+
+        function setImage(type, imageData) {
+            if (type === 'proof') {
+                proofImage = imageData;
+                proofPreview.src = proofImage;
+                proofPreview.classList.add('active');
+            } else {
+                machineImage = imageData;
+                machinePreview.src = machineImage;
+                machinePreview.classList.add('active');
+            }
+
+            // Enable compare button if both images are loaded
+            if (proofImage && machineImage) {
+                compareBtn.disabled = false;
+            }
+        }
+
+        async function openCamera(type) {
+            currentCameraType = type;
+            cameraModal.classList.add('active');
+
+            // Show overlay controls only when taking second photo (machine)
+            if (type === 'machine' && proofImage) {
+                cameraHint.style.display = 'block';
+                opacityControl.style.display = 'block';
+            } else {
+                cameraHint.style.display = 'none';
+                opacityControl.style.display = 'none';
+            }
+
+            try {
+                // Request camera with rear camera preference for mobile
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                });
+
+                cameraVideo.srcObject = cameraStream;
+
+                // Wait for video to be ready and draw overlay if needed
+                cameraVideo.onloadedmetadata = () => {
+                    if (type === 'machine' && proofImage) {
+                        drawOverlay();
+                    }
+                };
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Nie można uzyskać dostępu do kamery. Upewnij się, że przyznałeś uprawnienia do kamery.');
+                closeCamera();
+            }
+        }
+
+        function updateOverlayOpacity() {
+            const value = overlayOpacity.value;
+            opacityValue.textContent = value + '%';
+            if (currentCameraType === 'machine' && proofImage) {
+                drawOverlay();
+            }
+        }
+
+        function drawOverlay() {
+            const video = cameraVideo;
+            const canvas = overlayCanvas;
+            const ctx = canvas.getContext('2d');
+
+            // Set canvas size to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw proof image with opacity
+            const opacity = overlayOpacity.value / 100;
+            ctx.globalAlpha = opacity;
+
+            // Load and draw the proof image
+            const img = new Image();
+            img.onload = () => {
+                // Calculate scaling to fit the image
+                const scale = Math.min(
+                    canvas.width / img.width,
+                    canvas.height / img.height
+                );
+
+                const x = (canvas.width - img.width * scale) / 2;
+                const y = (canvas.height - img.height * scale) / 2;
+
+                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                ctx.globalAlpha = 1;
+            };
+            img.src = proofImage;
+
+            // Continue updating overlay
+            if (cameraModal.classList.contains('active')) {
+                requestAnimationFrame(drawOverlay);
+            }
+        }
+
+        function capturePhoto() {
+            const canvas = document.createElement('canvas');
+            const video = cameraVideo;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+
+            const imageData = canvas.toDataURL('image/jpeg', 0.9);
+            setImage(currentCameraType, imageData);
+
+            closeCamera();
+        }
+
+        function closeCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+
+            cameraModal.classList.remove('active');
+            cameraVideo.srcObject = null;
+            currentCameraType = null;
+
+            // Clear overlay canvas
+            const ctx = overlayCanvas.getContext('2d');
+            ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
         }
 
         async function compareImages() {
@@ -544,8 +864,26 @@
         }
 
         function normalizeText(text) {
-            // Remove extra whitespace and normalize
-            return text.replace(/\s+/g, ' ').trim();
+            // Advanced normalization for better comparison
+            return text
+                .toLowerCase() // Case insensitive
+                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '') // Remove punctuation
+                .replace(/\s+/g, ' ') // Normalize whitespace
+                .replace(/[0oO]/g, '0') // Normalize similar characters
+                .replace(/[1lI]/g, '1')
+                .trim();
+        }
+
+        function fuzzyMatch(word1, word2, threshold = 0.8) {
+            // Check if two words are similar enough using character-level similarity
+            if (word1 === word2) return true;
+            if (Math.abs(word1.length - word2.length) > 3) return false;
+
+            const distance = levenshteinDistance(word1, word2);
+            const maxLen = Math.max(word1.length, word2.length);
+            const similarity = 1 - (distance / maxLen);
+
+            return similarity >= threshold;
         }
 
         function calculateSimilarity(text1, text2) {
@@ -588,28 +926,57 @@
 
         function calculateDiff(text1, text2) {
             // Split into words for better comparison
-            const words1 = text1.split(/\s+/);
-            const words2 = text2.split(/\s+/);
+            const words1 = text1.split(/\s+/).filter(w => w.length > 0);
+            const words2 = text2.split(/\s+/).filter(w => w.length > 0);
 
             const diff = [];
             let differences = 0;
 
-            const maxLen = Math.max(words1.length, words2.length);
+            // Use dynamic programming for better alignment
+            const len1 = words1.length;
+            const len2 = words2.length;
 
-            for (let i = 0; i < maxLen; i++) {
-                const word1 = words1[i] || '';
-                const word2 = words2[i] || '';
+            // Simple alignment: try to match words using fuzzy matching
+            let i = 0, j = 0;
 
-                if (word1 === word2) {
-                    diff.push({ type: 'unchanged', text: word1 });
+            while (i < len1 || j < len2) {
+                if (i >= len1) {
+                    // Only words2 left
+                    diff.push({ type: 'added', text: words2[j] });
+                    differences++;
+                    j++;
+                } else if (j >= len2) {
+                    // Only words1 left
+                    diff.push({ type: 'removed', text: words1[i] });
+                    differences++;
+                    i++;
+                } else if (words1[i] === words2[j] || fuzzyMatch(words1[i], words2[j])) {
+                    // Words match (exact or fuzzy)
+                    diff.push({ type: 'unchanged', text: words1[i] });
+                    i++;
+                    j++;
                 } else {
-                    if (word1) {
-                        diff.push({ type: 'removed', text: word1 });
+                    // Check if next word matches (to handle insertions/deletions)
+                    const nextMatch1 = j + 1 < len2 && (words1[i] === words2[j + 1] || fuzzyMatch(words1[i], words2[j + 1]));
+                    const nextMatch2 = i + 1 < len1 && (words1[i + 1] === words2[j] || fuzzyMatch(words1[i + 1], words2[j]));
+
+                    if (nextMatch1 && !nextMatch2) {
+                        // Word was added in text2
+                        diff.push({ type: 'added', text: words2[j] });
                         differences++;
-                    }
-                    if (word2) {
-                        diff.push({ type: 'added', text: word2 });
+                        j++;
+                    } else if (nextMatch2 && !nextMatch1) {
+                        // Word was removed from text1
+                        diff.push({ type: 'removed', text: words1[i] });
                         differences++;
+                        i++;
+                    } else {
+                        // Words are different
+                        diff.push({ type: 'removed', text: words1[i] });
+                        diff.push({ type: 'added', text: words2[j] });
+                        differences += 2;
+                        i++;
+                        j++;
                     }
                 }
             }

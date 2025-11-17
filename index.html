@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Text Check - Porównanie Wydruków</title>
+    <title>Text Check PRO - Porównanie Wydruków</title>
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     <style>
         * {
@@ -39,8 +39,49 @@
         .subtitle {
             text-align: center;
             color: #666;
-            margin-bottom: 20px;
-            font-size: 0.95em;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 10px 20px;
+            background: #e0e0e0;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: all 0.2s;
+            color: #666;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .mode-btn:active {
+            transform: scale(0.95);
+        }
+
+        .mode-description {
+            text-align: center;
+            color: #667eea;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+            padding: 8px;
+            background: #f0f1ff;
+            border-radius: 5px;
+            min-height: 40px;
         }
 
         .upload-section {
@@ -188,42 +229,6 @@
             display: block;
         }
 
-        .image-comparison {
-            margin: 20px 0;
-        }
-
-        .comparison-images {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .image-container {
-            position: relative;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            background: #000;
-        }
-
-        .image-container h4 {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(255,255,255,0.95);
-            padding: 8px 12px;
-            border-radius: 5px;
-            color: #667eea;
-            font-size: 0.9em;
-            z-index: 10;
-        }
-
-        .annotated-image {
-            width: 100%;
-            display: block;
-        }
-
         .stats {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -276,6 +281,50 @@
             background: #ffcdd2;
             color: #c62828;
             border: 2px solid #c62828;
+        }
+
+        .comparison-section {
+            margin: 20px 0;
+        }
+
+        .section-title {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 1.15em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comparison-images {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .image-container {
+            position: relative;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .image-container h4 {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.95);
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: #667eea;
+            font-size: 0.9em;
+            z-index: 10;
+        }
+
+        .comparison-canvas {
+            width: 100%;
+            display: block;
         }
 
         .text-diff-section {
@@ -436,6 +485,28 @@
             transform: scale(0.95);
         }
 
+        .legend {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid #999;
+        }
+
         @media (min-width: 768px) {
             .container {
                 padding: 30px;
@@ -461,8 +532,17 @@
 </head>
 <body>
     <div class="container">
-        <h1>📋 Text Check</h1>
-        <p class="subtitle">Porównaj tekst na wydrukach - Proof vs Maszyna</p>
+        <h1>📋 Text Check PRO</h1>
+        <p class="subtitle">Zaawansowane porównywanie wydruków - Tekst + Grafika</p>
+
+        <div class="mode-selector">
+            <button class="mode-btn" data-mode="hybrid">🎯 Hybrydowy</button>
+            <button class="mode-btn" data-mode="visual">🖼️ Tylko grafika</button>
+            <button class="mode-btn" data-mode="text">📝 Tylko tekst</button>
+        </div>
+        <div class="mode-description" id="mode-description">
+            Wybierz tryb porównywania...
+        </div>
 
         <div class="upload-section">
             <div class="upload-box">
@@ -489,14 +569,20 @@
         <button id="compare-btn" class="compare-btn" disabled>Porównaj wydruki</button>
 
         <div id="progress-section" class="progress-section">
-            <div class="progress-item">
-                <span class="progress-label">Przetwarzanie Proof:</span>
+            <div class="progress-item" id="progress-visual" style="display: none;">
+                <span class="progress-label">Przetwarzanie wizualne:</span>
+                <div class="progress-bar-container">
+                    <div id="visual-progress" class="progress-bar">0%</div>
+                </div>
+            </div>
+            <div class="progress-item" id="progress-proof">
+                <span class="progress-label">OCR - Proof:</span>
                 <div class="progress-bar-container">
                     <div id="proof-progress" class="progress-bar">0%</div>
                 </div>
             </div>
-            <div class="progress-item">
-                <span class="progress-label">Przetwarzanie wydruku z maszyny:</span>
+            <div class="progress-item" id="progress-machine">
+                <span class="progress-label">OCR - Maszyna:</span>
                 <div class="progress-bar-container">
                     <div id="machine-progress" class="progress-bar">0%</div>
                 </div>
@@ -506,42 +592,53 @@
         <div id="results-section" class="results-section">
             <div id="status-message"></div>
 
-            <div class="stats">
-                <div class="stat-box">
-                    <div class="stat-number" id="stat-similarity">0%</div>
-                    <div class="stat-label">Podobieństwo</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number" id="stat-differences">0</div>
-                    <div class="stat-label">Różnic</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number" id="stat-proof-words">0</div>
-                    <div class="stat-label">Słów w Proof</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number" id="stat-machine-words">0</div>
-                    <div class="stat-label">Słów w Maszynie</div>
-                </div>
-            </div>
+            <div class="stats" id="stats-container"></div>
 
-            <div class="image-comparison">
-                <h3 style="color: #667eea; margin-bottom: 10px;">📸 Wizualizacja różnic</h3>
+            <div class="comparison-section" id="visual-comparison" style="display: none;">
+                <h3 class="section-title">🎨 Porównanie wizualne (Heatmapa różnic)</h3>
                 <div class="comparison-images">
                     <div class="image-container">
                         <h4>📄 Proof</h4>
-                        <canvas id="proof-canvas" class="annotated-image"></canvas>
+                        <canvas id="proof-visual-canvas" class="comparison-canvas"></canvas>
                     </div>
                     <div class="image-container">
-                        <h4>🖨️ Maszyna</h4>
-                        <canvas id="machine-canvas" class="annotated-image"></canvas>
+                        <h4>🔥 Heatmapa różnic</h4>
+                        <canvas id="heatmap-canvas" class="comparison-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #00ff00;"></div>
+                        <span>Identyczne</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ffff00;"></div>
+                        <span>Małe różnice</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff0000;"></div>
+                        <span>Duże różnice</span>
                     </div>
                 </div>
             </div>
 
-            <div class="text-diff-section">
-                <h3>📝 Szczegółowe różnice tekstowe</h3>
-                <div id="diff-content" class="diff-content"></div>
+            <div class="comparison-section" id="text-comparison" style="display: none;">
+                <h3 class="section-title">📝 Porównanie tekstowe (OCR)</h3>
+                <div class="comparison-images">
+                    <div class="image-container">
+                        <h4>📄 Proof</h4>
+                        <canvas id="proof-text-canvas" class="comparison-canvas"></canvas>
+                    </div>
+                    <div class="image-container">
+                        <h4>🖨️ Maszyna</h4>
+                        <canvas id="machine-text-canvas" class="comparison-canvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="text-diff-section">
+                    <h3>📝 Szczegółowe różnice tekstowe</h3>
+                    <div id="diff-content" class="diff-content"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -572,15 +669,189 @@
     </div>
 
     <script>
-        // State
+        // ===== PIXELMATCH ALGORITHM (inline) =====
+        function pixelmatch(img1, img2, output, width, height, options) {
+            const threshold = options.threshold === undefined ? 0.1 : options.threshold;
+            const includeAA = options.includeAA !== false;
+
+            const maxDelta = 35215 * threshold * threshold;
+            let diff = 0;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const pos = (y * width + x) * 4;
+
+                    const delta = colorDelta(img1, img2, pos, pos);
+
+                    if (delta > maxDelta) {
+                        if (!includeAA || (includeAA && !antialiased(img1, x, y, width, height, img2))) {
+                            const r1 = img1[pos], g1 = img1[pos + 1], b1 = img1[pos + 2];
+                            const r2 = img2[pos], g2 = img2[pos + 1], b2 = img2[pos + 2];
+
+                            // Calculate diff intensity for heatmap
+                            const intensity = Math.min(255, Math.sqrt(delta) * 10);
+
+                            // Heatmap: green -> yellow -> red
+                            if (intensity < 85) {
+                                output[pos] = 0;
+                                output[pos + 1] = 255;
+                                output[pos + 2] = 0;
+                            } else if (intensity < 170) {
+                                output[pos] = 255;
+                                output[pos + 1] = 255;
+                                output[pos + 2] = 0;
+                            } else {
+                                output[pos] = 255;
+                                output[pos + 1] = 0;
+                                output[pos + 2] = 0;
+                            }
+                            output[pos + 3] = 255;
+                            diff++;
+                        } else {
+                            drawGrayPixel(img1, pos, output);
+                        }
+                    } else {
+                        // Same - draw green
+                        output[pos] = 0;
+                        output[pos + 1] = 255;
+                        output[pos + 2] = 0;
+                        output[pos + 3] = 255;
+                    }
+                }
+            }
+            return diff;
+        }
+
+        function colorDelta(img1, img2, k, m) {
+            let r1 = img1[k + 0];
+            let g1 = img1[k + 1];
+            let b1 = img1[k + 2];
+            let a1 = img1[k + 3];
+
+            let r2 = img2[m + 0];
+            let g2 = img2[m + 1];
+            let b2 = img2[m + 2];
+            let a2 = img2[m + 3];
+
+            if (a1 === a2 && r1 === r2 && g1 === g2 && b1 === b2) return 0;
+
+            if (a1 < 255) {
+                a1 /= 255;
+                r1 = blend(r1, a1);
+                g1 = blend(g1, a1);
+                b1 = blend(b1, a1);
+            }
+
+            if (a2 < 255) {
+                a2 /= 255;
+                r2 = blend(r2, a2);
+                g2 = blend(g2, a2);
+                b2 = blend(b2, a2);
+            }
+
+            const y1 = rgb2y(r1, g1, b1);
+            const y2 = rgb2y(r2, g2, b2);
+            const y = y1 - y2;
+
+            const i = rgb2i(r1, g1, b1) - rgb2i(r2, g2, b2);
+            const q = rgb2q(r1, g1, b1) - rgb2q(r2, g2, b2);
+
+            return 0.5053 * y * y + 0.299 * i * i + 0.1957 * q * q;
+        }
+
+        function rgb2y(r, g, b) { return r * 0.29889531 + g * 0.58662247 + b * 0.11448223; }
+        function rgb2i(r, g, b) { return r * 0.59597799 - g * 0.27417610 - b * 0.32180189; }
+        function rgb2q(r, g, b) { return r * 0.21147017 - g * 0.52261711 + b * 0.31114694; }
+        function blend(c, a) { return 255 + (c - 255) * a; }
+
+        function antialiased(img, x1, y1, width, height, img2) {
+            const x0 = Math.max(x1 - 1, 0);
+            const y0 = Math.max(y1 - 1, 0);
+            const x2 = Math.min(x1 + 1, width - 1);
+            const y2 = Math.min(y1 + 1, height - 1);
+            const pos = (y1 * width + x1) * 4;
+            let zeroes = 0;
+            let min = 0;
+            let max = 0;
+            let minX, minY, maxX, maxY;
+
+            for (let y = y0; y <= y2; y++) {
+                for (let x = x0; x <= x2; x++) {
+                    if (x === x1 && y === y1) continue;
+
+                    const delta = colorDelta(img, img2, pos, (y * width + x) * 4);
+                    if (delta === 0) {
+                        zeroes++;
+                        if (zeroes > 2) return true;
+                    } else if (delta < min) {
+                        min = delta;
+                        minX = x;
+                        minY = y;
+                    } else if (delta > max) {
+                        max = delta;
+                        maxX = x;
+                        maxY = y;
+                    }
+                }
+            }
+
+            if (min === 0 || max === 0) return false;
+            return (hasManySiblings(img, minX, minY, width, height) && hasManySiblings(img2, minX, minY, width, height)) ||
+                   (hasManySiblings(img, maxX, maxY, width, height) && hasManySiblings(img2, maxX, maxY, width, height));
+        }
+
+        function hasManySiblings(img, x1, y1, width, height) {
+            const x0 = Math.max(x1 - 1, 0);
+            const y0 = Math.max(y1 - 1, 0);
+            const x2 = Math.min(x1 + 1, width - 1);
+            const y2 = Math.min(y1 + 1, height - 1);
+            const pos = (y1 * width + x1) * 4;
+            let zeroes = 0;
+
+            for (let y = y0; y <= y2; y++) {
+                for (let x = x0; x <= x2; x++) {
+                    if (x === x1 && y === y1) continue;
+
+                    const pos2 = (y * width + x) * 4;
+                    if (img[pos] === img[pos2] &&
+                        img[pos + 1] === img[pos2 + 1] &&
+                        img[pos + 2] === img[pos2 + 2] &&
+                        img[pos + 3] === img[pos2 + 3]) zeroes++;
+
+                    if (zeroes > 2) return true;
+                }
+            }
+
+            return false;
+        }
+
+        function drawGrayPixel(img, i, output) {
+            const r = img[i + 0];
+            const g = img[i + 1];
+            const b = img[i + 2];
+            const val = blend(rgb2y(r, g, b), img[i + 3] / 255);
+            output[i + 0] = val;
+            output[i + 1] = val;
+            output[i + 2] = val;
+            output[i + 3] = 255;
+        }
+
+        // ===== STATE =====
         let proofImage = null;
         let machineImage = null;
         let proofData = null;
         let machineData = null;
         let currentCameraType = null;
         let cameraStream = null;
+        let comparisonMode = 'hybrid';
 
-        // Elements
+        const modeDescriptions = {
+            hybrid: '🎯 Porównuje WSZYSTKO: grafiki, kolory, tekst. Najdokładniejszy!',
+            visual: '🖼️ Porównuje tylko wizualnie (pixel-by-pixel). Świetne dla grafik i kolorów.',
+            text: '📝 Porównuje tylko tekst używając OCR. Szybsze, ignoruje grafiki.'
+        };
+
+        // ===== ELEMENTS =====
         const proofUpload = document.getElementById('proof-upload');
         const machineUpload = document.getElementById('machine-upload');
         const proofPreview = document.getElementById('proof-preview');
@@ -590,8 +861,8 @@
         const resultsSection = document.getElementById('results-section');
         const proofProgress = document.getElementById('proof-progress');
         const machineProgress = document.getElementById('machine-progress');
+        const visualProgress = document.getElementById('visual-progress');
 
-        // Camera elements
         const proofCameraBtn = document.getElementById('proof-camera-btn');
         const machineCameraBtn = document.getElementById('machine-camera-btn');
         const cameraModal = document.getElementById('camera-modal');
@@ -604,7 +875,23 @@
         const overlayOpacity = document.getElementById('overlay-opacity');
         const opacityValue = document.getElementById('opacity-value');
 
-        // Event listeners
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const modeDescription = document.getElementById('mode-description');
+
+        // ===== MODE SELECTION =====
+        modeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                comparisonMode = btn.dataset.mode;
+                modeDescription.textContent = modeDescriptions[comparisonMode];
+            });
+        });
+
+        // Set default mode
+        modeButtons[0].click();
+
+        // ===== EVENT LISTENERS =====
         proofUpload.addEventListener('change', (e) => handleImageUpload(e, 'proof'));
         machineUpload.addEventListener('change', (e) => handleImageUpload(e, 'machine'));
         compareBtn.addEventListener('click', compareImages);
@@ -614,6 +901,7 @@
         cancelCameraBtn.addEventListener('click', closeCamera);
         overlayOpacity.addEventListener('input', updateOverlayOpacity);
 
+        // ===== IMAGE HANDLING =====
         function handleImageUpload(event, type) {
             const file = event.target.files[0];
             if (!file) return;
@@ -641,11 +929,11 @@
             }
         }
 
+        // ===== CAMERA =====
         async function openCamera(type) {
             currentCameraType = type;
             cameraModal.classList.add('active');
 
-            // Show overlay only when taking second photo
             if (type === 'machine' && proofImage) {
                 cameraHint.style.display = 'block';
                 opacityControl.style.display = 'block';
@@ -708,18 +996,46 @@
             currentCameraType = null;
         }
 
+        // ===== MAIN COMPARISON =====
         async function compareImages() {
             compareBtn.disabled = true;
             progressSection.classList.add('active');
             resultsSection.classList.remove('active');
 
-            try {
-                // Process both images with OCR
-                proofData = await performOCR(proofImage, 'proof');
-                machineData = await performOCR(machineImage, 'machine');
+            // Show appropriate progress bars
+            document.getElementById('progress-visual').style.display =
+                (comparisonMode === 'visual' || comparisonMode === 'hybrid') ? 'block' : 'none';
+            document.getElementById('progress-proof').style.display =
+                (comparisonMode === 'text' || comparisonMode === 'hybrid') ? 'block' : 'none';
+            document.getElementById('progress-machine').style.display =
+                (comparisonMode === 'text' || comparisonMode === 'hybrid') ? 'block' : 'none';
 
-                // Compare and display results
-                displayResults();
+            try {
+                let visualSimilarity = null;
+                let textSimilarity = null;
+                let textDiff = null;
+
+                // Visual comparison
+                if (comparisonMode === 'visual' || comparisonMode === 'hybrid') {
+                    visualProgress.style.width = '20%';
+                    visualProgress.textContent = '20%';
+                    visualSimilarity = await performVisualComparison();
+                    visualProgress.style.width = '100%';
+                    visualProgress.textContent = '100%';
+                }
+
+                // Text comparison
+                if (comparisonMode === 'text' || comparisonMode === 'hybrid') {
+                    proofData = await performOCR(proofImage, 'proof');
+                    machineData = await performOCR(machineImage, 'machine');
+
+                    const result = compareText();
+                    textSimilarity = result.similarity;
+                    textDiff = result.diff;
+                }
+
+                // Display results
+                displayResults(visualSimilarity, textSimilarity, textDiff);
                 compareBtn.disabled = false;
             } catch (error) {
                 console.error('Error:', error);
@@ -751,48 +1067,73 @@
             return result.data;
         }
 
-        function displayResults() {
-            resultsSection.classList.add('active');
+        async function performVisualComparison() {
+            return new Promise((resolve) => {
+                const img1 = new Image();
+                const img2 = new Image();
+                let loaded = 0;
 
+                const checkLoaded = () => {
+                    loaded++;
+                    if (loaded === 2) {
+                        const similarity = compareImagesPixelByPixel(img1, img2);
+                        resolve(similarity);
+                    }
+                };
+
+                img1.onload = checkLoaded;
+                img2.onload = checkLoaded;
+                img1.src = proofImage;
+                img2.src = machineImage;
+            });
+        }
+
+        function compareImagesPixelByPixel(img1, img2) {
+            const canvas = document.createElement('canvas');
+            const width = Math.min(img1.width, img2.width);
+            const height = Math.min(img1.height, img2.height);
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+
+            // Draw first image
+            ctx.drawImage(img1, 0, 0, width, height);
+            const data1 = ctx.getImageData(0, 0, width, height);
+
+            // Draw second image
+            ctx.drawImage(img2, 0, 0, width, height);
+            const data2 = ctx.getImageData(0, 0, width, height);
+
+            // Create diff image
+            const diff = ctx.createImageData(width, height);
+
+            // Perform pixel comparison
+            const diffPixels = pixelmatch(data1.data, data2.data, diff.data, width, height, {
+                threshold: 0.1,
+                includeAA: true
+            });
+
+            const totalPixels = width * height;
+            const similarity = Math.max(0, 100 - (diffPixels / totalPixels * 100));
+
+            // Store diff for visualization
+            window.visualDiffData = { diff, width, height };
+
+            return Math.round(similarity * 100) / 100;
+        }
+
+        function compareText() {
             const proofText = proofData.text.trim();
             const machineText = machineData.text.trim();
 
-            // Normalize and compare
             const normalizedProof = normalizeText(proofText);
             const normalizedMachine = normalizeText(machineText);
 
-            // Calculate diff using better algorithm
             const diff = computeDiff(normalizedProof, normalizedMachine);
             const similarity = calculateSimilarity(normalizedProof, normalizedMachine);
 
-            // Update stats
-            const proofWords = normalizedProof.split(/\s+/).filter(w => w.length > 0).length;
-            const machineWords = normalizedMachine.split(/\s+/).filter(w => w.length > 0).length;
-
-            document.getElementById('stat-similarity').textContent = similarity + '%';
-            document.getElementById('stat-differences').textContent = diff.diffCount;
-            document.getElementById('stat-proof-words').textContent = proofWords;
-            document.getElementById('stat-machine-words').textContent = machineWords;
-
-            // Display status
-            const statusDiv = document.getElementById('status-message');
-            if (similarity >= 95) {
-                statusDiv.className = 'status-message status-success';
-                statusDiv.textContent = '✅ Wydruki są praktycznie identyczne! Możesz kontynuować drukowanie.';
-            } else if (similarity >= 85) {
-                statusDiv.className = 'status-message status-warning';
-                statusDiv.textContent = '⚠️ Wykryto niewielkie różnice. Sprawdź szczegóły poniżej.';
-            } else {
-                statusDiv.className = 'status-message status-error';
-                statusDiv.textContent = '❌ Wykryto znaczące różnice! Sprawdź dokładnie wydruki.';
-            }
-
-            // Display text diff
-            displayTextDiff(diff.operations);
-
-            // Draw annotated images
-            drawAnnotatedImage('proof', proofImage, proofData, diff.proofDiffs);
-            drawAnnotatedImage('machine', machineImage, machineData, diff.machineDiffs);
+            return { similarity, diff, proofText, machineText };
         }
 
         function normalizeText(text) {
@@ -838,12 +1179,10 @@
             return matrix[str2.length][str1.length];
         }
 
-        // Better diff algorithm using Myers algorithm variant
         function computeDiff(text1, text2) {
             const words1 = text1.split(/\s+/).filter(w => w.length > 0);
             const words2 = text2.split(/\s+/).filter(w => w.length > 0);
 
-            // Create LCS (Longest Common Subsequence) table
             const m = words1.length;
             const n = words2.length;
             const lcs = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
@@ -858,7 +1197,6 @@
                 }
             }
 
-            // Backtrack to find differences
             const operations = [];
             const proofDiffs = new Set();
             const machineDiffs = new Set();
@@ -898,6 +1236,127 @@
             return similarity >= threshold;
         }
 
+        function displayResults(visualSimilarity, textSimilarity, textDiff) {
+            resultsSection.classList.add('active');
+
+            // Calculate overall similarity
+            let overallSimilarity;
+            if (comparisonMode === 'visual') {
+                overallSimilarity = visualSimilarity;
+            } else if (comparisonMode === 'text') {
+                overallSimilarity = textSimilarity;
+            } else { // hybrid
+                overallSimilarity = (visualSimilarity * 0.6 + textSimilarity * 0.4);
+            }
+
+            // Update stats
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.innerHTML = '';
+
+            if (comparisonMode === 'visual' || comparisonMode === 'hybrid') {
+                statsContainer.innerHTML += `
+                    <div class="stat-box">
+                        <div class="stat-number">${visualSimilarity.toFixed(1)}%</div>
+                        <div class="stat-label">Podobieństwo wizualne</div>
+                    </div>
+                `;
+            }
+
+            if (comparisonMode === 'text' || comparisonMode === 'hybrid') {
+                const proofWords = normalizeText(proofData.text).split(/\s+/).filter(w => w.length > 0).length;
+                const machineWords = normalizeText(machineData.text).split(/\s+/).filter(w => w.length > 0).length;
+
+                statsContainer.innerHTML += `
+                    <div class="stat-box">
+                        <div class="stat-number">${textSimilarity}%</div>
+                        <div class="stat-label">Podobieństwo tekstu</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">${textDiff.diffCount}</div>
+                        <div class="stat-label">Różnic tekstowych</div>
+                    </div>
+                `;
+            }
+
+            if (comparisonMode === 'hybrid') {
+                statsContainer.innerHTML += `
+                    <div class="stat-box">
+                        <div class="stat-number">${overallSimilarity.toFixed(1)}%</div>
+                        <div class="stat-label">Ogólne podobieństwo</div>
+                    </div>
+                `;
+            }
+
+            // Status message
+            const statusDiv = document.getElementById('status-message');
+            if (overallSimilarity >= 95) {
+                statusDiv.className = 'status-message status-success';
+                statusDiv.textContent = '✅ Wydruki są praktycznie identyczne! Możesz kontynuować drukowanie.';
+            } else if (overallSimilarity >= 85) {
+                statusDiv.className = 'status-message status-warning';
+                statusDiv.textContent = '⚠️ Wykryto niewielkie różnice. Sprawdź szczegóły poniżej.';
+            } else {
+                statusDiv.className = 'status-message status-error';
+                statusDiv.textContent = '❌ Wykryto znaczące różnice! Sprawdź dokładnie wydruki.';
+            }
+
+            // Show appropriate visualizations
+            const visualComparison = document.getElementById('visual-comparison');
+            const textComparison = document.getElementById('text-comparison');
+
+            if (comparisonMode === 'visual' || comparisonMode === 'hybrid') {
+                visualComparison.style.display = 'block';
+                drawVisualComparison();
+            } else {
+                visualComparison.style.display = 'none';
+            }
+
+            if (comparisonMode === 'text' || comparisonMode === 'hybrid') {
+                textComparison.style.display = 'block';
+                displayTextDiff(textDiff.operations);
+                drawAnnotatedImage('proof-text', proofImage, proofData, textDiff.proofDiffs);
+                drawAnnotatedImage('machine-text', machineImage, machineData, textDiff.machineDiffs);
+            } else {
+                textComparison.style.display = 'none';
+            }
+        }
+
+        function drawVisualComparison() {
+            const proofCanvas = document.getElementById('proof-visual-canvas');
+            const heatmapCanvas = document.getElementById('heatmap-canvas');
+
+            // Draw proof image
+            const img = new Image();
+            img.onload = () => {
+                const ctx = proofCanvas.getContext('2d');
+                const maxWidth = proofCanvas.parentElement.clientWidth - 4;
+                const scale = maxWidth / img.width;
+
+                proofCanvas.width = img.width;
+                proofCanvas.height = img.height;
+                proofCanvas.style.width = maxWidth + 'px';
+                proofCanvas.style.height = (img.height * scale) + 'px';
+
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = proofImage;
+
+            // Draw heatmap
+            if (window.visualDiffData) {
+                const { diff, width, height } = window.visualDiffData;
+                const ctx = heatmapCanvas.getContext('2d');
+                const maxWidth = heatmapCanvas.parentElement.clientWidth - 4;
+                const scale = maxWidth / width;
+
+                heatmapCanvas.width = width;
+                heatmapCanvas.height = height;
+                heatmapCanvas.style.width = maxWidth + 'px';
+                heatmapCanvas.style.height = (height * scale) + 'px';
+
+                ctx.putImageData(diff, 0, 0);
+            }
+        }
+
         function displayTextDiff(operations) {
             const diffContainer = document.getElementById('diff-content');
             diffContainer.innerHTML = '';
@@ -926,13 +1385,12 @@
             });
         }
 
-        function drawAnnotatedImage(type, imageData, ocrData, diffIndices) {
-            const canvas = document.getElementById(type + '-canvas');
+        function drawAnnotatedImage(canvasId, imageData, ocrData, diffIndices) {
+            const canvas = document.getElementById(canvasId + '-canvas');
             const ctx = canvas.getContext('2d');
 
             const img = new Image();
             img.onload = () => {
-                // Set canvas size
                 const maxWidth = canvas.parentElement.clientWidth - 4;
                 const scale = maxWidth / img.width;
                 canvas.width = img.width;
@@ -940,10 +1398,8 @@
                 canvas.style.width = maxWidth + 'px';
                 canvas.style.height = (img.height * scale) + 'px';
 
-                // Draw image
                 ctx.drawImage(img, 0, 0);
 
-                // Draw bounding boxes for differences
                 if (ocrData.words && diffIndices.size > 0) {
                     ctx.strokeStyle = '#ff0000';
                     ctx.lineWidth = 3;

@@ -1,151 +1,255 @@
-# 📋 Text Check - Porównywarka Wydruków
+# 📋 Text Check PRO - Profesjonalna Porównywarka Wydruków
 
-Aplikacja webowa do porównywania tekstu na zdjęciach wydruków. Stworzona specjalnie dla drukarzy flexo do szybkiego sprawdzania zgodności proof'u z wydrukiem maszynowym.
+Zaawansowana aplikacja webowa do porównywania wydruków flexo. Porównuje **WSZYSTKO**: tekst, grafiki, kolory, layout!
 
 ## 🎯 Przeznaczenie
 
-Aplikacja rozwiązuje problem czasochłonnego ręcznego porównywania wydruków. Zamiast czytać każdą literę na obu wydrukach, wystarczy zrobić zdjęcia i pozwolić aplikacji znaleźć różnice.
+Stworzona dla drukarzy flexo do szybkiej kontroli jakości. Porównuj pełne wydruki z grafikami, zdjęciami produktów, logo i tekstem - wszystko w jednej aplikacji!
 
-## ✨ Funkcje
+### Przykłady użycia:
+- ✅ Opakowania z grafiką produktu + tekst ("Cukier królewski 1kg")
+- ✅ Etykiety z logo + różne kolory + informacje
+- ✅ Złożone wydruki (np. "Belbake mąka pszenna 1kg")
+- ✅ Kontrola kolorów logo i zdjęć
+- ✅ Weryfikacja tekstu (składniki, gramatura, etc.)
 
-- **📷 Zdjęcia z kamery** - Rób zdjęcia bezpośrednio w aplikacji bez potrzeby galerii
-- **🎯 Działający overlay** - Przy robieniu drugiego zdjęcia widzisz półprzezroczyste pierwsze zdjęcie na podglądzie kamery!
-- **🖼️ Wizualne oznaczenia różnic** - Czerwone prostokąty pokazują dokładnie gdzie są różnice na zdjęciach
-- **🤖 OCR (Rozpoznawanie tekstu)** - Automatyczne wykrywanie tekstu na zdjęciach używając Tesseract.js
-- **🧠 Zaawansowane porównywanie** - Algorytm LCS radzi sobie z brakami i przesunięciami tekstu
-- **🔍 Fuzzy matching** - Ignoruje drobne różnice (wielkość liter, interpunkcja, błędy OCR)
-- **📊 Szczegółowe statystyki** - Podobieństwo, liczba różnic, liczba słów
-- **📱 Mobilny UI** - Duże przyciski, łatwe w użyciu na telefonie
-- **💻 Działa offline** - Po pierwszym załadowaniu nie wymaga internetu
-- **🔒 Prywatność** - Zdjęcia nie są wysyłane na żaden serwer, wszystko w przeglądarce
+## ✨ MEGA Funkcje
+
+### 🎯 3 Tryby Porównywania
+
+**1. Hybrydowy (Najlepszy!)**
+- Porównuje WSZYSTKO: grafiki + kolory + tekst
+- Używa: Pixelmatch (60%) + OCR (40%)
+- Idealny dla kompletnych wydruków z grafiką
+
+**2. Tylko Grafika**
+- Pixel-by-pixel comparison
+- Heatmapa różnic (zielony→żółty→czerwony)
+- Świetny dla sprawdzania kolorów i grafik
+- Ignoruje tekst - szybszy!
+
+**3. Tylko Tekst**
+- OCR + LCS algorithm
+- Fuzzy matching
+- Idealny gdy jest dużo tekstu, mało grafiki
+- Najszybszy tryb
+
+### 🔥 Heatmapa Różnic (Visual Comparison)
+- **Zielony** = Identyczne piksele
+- **Żółty** = Małe różnice (tolerowane)
+- **Czerwony** = Duże różnice! Wymaga sprawdzenia
+
+### 🤖 Zaawansowane Algorytmy
+
+**Pixelmatch:**
+- Perceptual image diff
+- Anti-aliasing detection
+- YIQ color space comparison
+- Profesjonalny algorytm używany przez Mapbox, Mozilla, etc.
+
+**OCR + LCS:**
+- Tesseract.js dla tekstu
+- Longest Common Subsequence
+- Radzi sobie z przesunięciami
+- Fuzzy matching dla błędów OCR
+
+### 📸 Funkcje Użytkowe
+- **Kamera z overlay** - Półprzezroczyste pierwsze zdjęcie na podglądzie
+- **Wizualne oznaczenia** - Czerwone prostokąty wokół różnic w tekście
+- **Mobilny UI** - Duże przyciski, przyjazny dla telefonu
+- **Działa offline** - Po pierwszym ładowaniu nie wymaga internetu
+- **100% Prywatność** - Wszystko przetwarza się lokalnie w przeglądarce
 
 ## 🚀 Jak używać
 
-### Opcja A: Zdjęcia z kamery (zalecane na telefonie)
+### Wybierz tryb:
+1. **🎯 Hybrydowy** - dla normalnych wydruków z grafiką i tekstem
+2. **🖼️ Tylko grafika** - jeśli chcesz sprawdzić tylko kolory/logo
+3. **📝 Tylko tekst** - jeśli interesuje Cię tylko tekst
 
-1. Otwórz aplikację w przeglądarce
-2. Kliknij **"📷 Zrób zdjęcie"** przy "Proof (Wydruk komputerowy)"
-3. Zrób zdjęcie proof'u i zatwierdź
-4. Kliknij **"📷 Zrób zdjęcie"** przy "Wydruk z maszyny"
-5. **WAŻNE:** Zobaczysz półprzezroczyste zdjęcie proof'u - dopasuj perspektywę!
-   - Użyj suwaka aby dostosować przezroczystość overlay
-   - Spróbuj ustawić kamerę tak, żeby wydruk z maszyny pokrywał się z podglądem proof'u
-6. Zrób zdjęcie wydruku z maszyny
-7. Kliknij **"Porównaj wydruki"**
-8. Poczekaj na wyniki (OCR może potrwać 10-30 sekund)
-9. Sprawdź wykryte różnice
+### Dodaj zdjęcia:
+**Opcja A: Z kamery** (zalecane)
+1. "📷 Zrób foto" przy Proof
+2. Zrób zdjęcie proof'u
+3. "📷 Zrób foto" przy Maszynie
+4. **Widzisz overlay!** - Dopasuj perspektywę
+5. Zrób zdjęcie
 
-### Opcja B: Upload zdjęć z galerii
+**Opcja B: Z galerii**
+1. "📁 Wybierz" i wgraj proof
+2. "📁 Wybierz" i wgraj wydruk z maszyny
 
-1. Kliknij **"📁 Wybierz zdjęcie"** i wybierz zdjęcie proof'u
-2. Kliknij **"📁 Wybierz zdjęcie"** i wybierz zdjęcie wydruku z maszyny
-3. Kliknij **"Porównaj wydruki"**
-4. Sprawdź wyniki
+### Porównaj:
+1. Kliknij **"Porównaj wydruki"**
+2. Poczekaj (10-60 sekund)
+3. Zobacz wyniki!
 
-## 📱 Wskazówki dla najlepszych wyników
+## 📊 Interpretacja Wyników
 
-1. **Jakość zdjęć** - Rób zdjęcia w dobrym oświetleniu
-2. **Ostrość** - Upewnij się że tekst jest ostry
-3. **Kąt** - Nie martw się kątem, ale staraj się żeby tekst był czytelny
-4. **Kontrast** - Im większy kontrast między tekstem a tłem, tym lepiej
-5. **Rozdzielczość** - Wyższe zdjęcia dają lepsze wyniki, ale zajmują więcej czasu
+### Ogólne podobieństwo:
+- **95-100%** ✅ - Praktycznie identyczne! Drukuj!
+- **85-94%** ⚠️ - Małe różnice, sprawdź szczegóły
+- **Poniżej 85%** ❌ - Duże różnice! Zatrzymaj druk!
+
+### W trybie Hybrydowym:
+- **Podobieństwo wizualne** - Jak podobne są grafiki/kolory (piksele)
+- **Podobieństwo tekstu** - Jak podobny jest tekst (słowa)
+- **Ogólne podobieństwo** - Kombinacja (60% visual + 40% text)
+
+### Co sprawdzać:
+1. **Heatmapę** - Czerwone obszary = problem
+2. **Czerwone prostokąty** - Dokładnie gdzie jest różnica w tekście
+3. **Szczegółowe różnice** - Lista co się zmieniło
 
 ## 🎨 Jak to działa
 
-1. **Kamera z overlay** - Przy robieniu drugiego zdjęcia, pierwsze zdjęcie jest wyświetlane jako półprzezroczysta nakładka na podglądzie kamery (możesz dostosować przezroczystość suwakiem)
+### Tryb Hybrydowy (Recommended):
 
-2. **OCR (Optical Character Recognition)** - Tesseract.js rozpoznaje tekst i pozycje słów na obu zdjęciach
+**Krok 1: Porównanie wizualne**
+1. Obrazy skalowane do tej samej wielkości
+2. Algorytm Pixelmatch porównuje każdy piksel
+3. Używa YIQ color space (jak ludzkie oko)
+4. Tworzy heatmapę: zielony→żółty→czerwony
+5. Zwraca % podobieństwa wizualnego
 
-3. **Normalizacja tekstu** - Inteligentne czyszczenie:
-   - Ignorowanie wielkości liter (A = a)
-   - Usuwanie interpunkcji
-   - Normalizacja podobnych znaków (O/0, I/1/l/|)
-   - Usuwanie nadmiarowych spacji
+**Krok 2: Porównanie tekstowe**
+6. OCR (Tesseract.js) rozpoznaje tekst i pozycje
+7. Normalizacja (lowercase, no punctuation, etc.)
+8. LCS algorithm znajduje wspólne słowa
+9. Fuzzy matching toleruje błędy
+10. Zaznacza różnice na zdjęciach
+11. Zwraca % podobieństwa tekstowego
 
-4. **Algorytm LCS (Longest Common Subsequence)** - Znajduje najdłuższy wspólny podciąg słów:
-   - Radzi sobie z brakami (np. brak "1" na początku)
-   - Wykrywa wstawienia i usunięcia
-   - Nie gubi się przy przesunięciach tekstu
+**Krok 3: Kombinacja**
+12. Ogólne podobieństwo = Visual×60% + Text×40%
+13. Pokazuje wszystkie wyniki
 
-5. **Fuzzy matching** - Toleruje drobne różnice (podobieństwo 75%+):
-   - "Helo" ≈ "Hello"
-   - Kompensuje błędy OCR
+### Algorytm Pixelmatch:
 
-6. **Wizualizacja**:
-   - **Na zdjęciach**: Czerwone prostokąty wokół różniących się słów
-   - **W tekście**:
-     - 🔴 Czerwony = usunięte (jest w proof, brak w wydruku)
-     - 🟢 Zielony = dodane (brak w proof, jest w wydruku)
-     - ⚪ Szary = bez zmian
+```javascript
+// Dla każdego piksela:
+1. Oblicz różnicę kolorów w YIQ space
+2. Sprawdź anti-aliasing
+3. Jeśli różnica > threshold:
+   - Oblicz intensywność różnicy
+   - Zielony (OK) / Żółty (małe) / Czerwony (duże)
+4. Zwróć heatmapę + % podobieństwa
+```
 
-## 📊 Interpretacja wyników
+### Algorytm LCS (Tekst):
 
-- **95-100% podobieństwa** ✅ - Praktycznie identyczne, możesz kontynuować drukowanie
-- **85-94% podobieństwa** ⚠️ - Niewielkie różnice, sprawdź szczegóły
-- **Poniżej 85%** ❌ - Znaczące różnice, należy sprawdzić dokładnie
+```javascript
+// Dla tekstu:
+1. Podziel na słowa
+2. Dynamic programming - LCS table
+3. Backtrack żeby znaleźć różnice:
+   - "delete" = jest w proof, brak w wydruku
+   - "insert" = brak w proof, jest w wydruku
+   - "equal" = identyczne (fuzzy match OK)
+4. Zaznacz różnice na obrazach
+```
 
 ## 🔧 Technologie
 
-- **Tesseract.js** - OCR engine do rozpoznawania tekstu z pozycjami słów
-- **JavaScript (ES6+)** - Logika aplikacji
-- **HTML5 Canvas** - Rysowanie oznaczeń na zdjęciach
-- **CSS3** - Responsywny interface użytkownika
-- **Algorytm LCS** - Inteligentne porównywanie z obsługą przesunięć
-- **Levenshtein Distance** - Fuzzy matching i podobieństwo tekstów
+- **Pixelmatch** - Perceptual image diff algorithm
+- **Tesseract.js** - OCR engine (Polski język!)
+- **LCS Algorithm** - Longest Common Subsequence
+- **YIQ Color Space** - Perceptual color comparison
+- **Levenshtein Distance** - Fuzzy text matching
+- **HTML5 Canvas** - Image processing & annotations
+- **JavaScript ES6+** - All logic runs client-side
+
+## 📱 Wskazówki
+
+### Dla najlepszych wyników:
+
+**Zdjęcia:**
+- Dobre oświetlenie (równomierne, bez cieni)
+- Ostre zdjęcia (nie poruszone)
+- Podobna perspektywa (użyj overlay!)
+- Caływydruk w kadrze
+
+**Tryb Hybrydowy:**
+- Użyj gdy masz grafiki + tekst
+- Najdokładniejszy ale najdłuższy
+- Sprawdzi WSZYSTKO
+
+**Tryb Grafika:**
+- Gdy chcesz sprawdzić tylko kolory/logo
+- Ignoruje tekst - szybszy
+- Zobacz heatmapę gdzie są różnice
+
+**Tryb Tekst:**
+- Gdy masz dużo tekstu, mało grafiki
+- Najszybszy OCR
+- Ignoruje kolory i grafiki
 
 ## ⚠️ Ograniczenia
 
-- OCR nie jest w 100% dokładny - może mieć problemy z:
-  - Bardzo małym tekstem
-  - Niskiej jakości zdjęciami
-  - Specjalnymi fontami
-  - Odblaskami lub cieniami
-- Pierwsze uruchomienie wymaga połączenia z internetem (pobieranie modelu OCR)
-- Przetwarzanie może zająć 10-60 sekund w zależności od rozmiaru zdjęć
+**OCR:**
+- Nie jest 100% dokładny
+- Problemy: mały tekst, słaba jakość, specjalne fonty, odblaski
 
-## 💡 Rozwiązywanie problemów
+**Visual Comparison:**
+- Wymaga podobnej perspektywy (użyj overlay!)
+- Duże różnice w kącie mogą dawać fałszywe alarmy
+- Zdjęcia muszą być tej samej orientacji
+
+**Ogólne:**
+- Pierwsze uruchomienie wymaga internetu (model OCR)
+- Przetwarzanie: 10-60 sekund (zależy od rozmiaru)
+- Duże zdjęcia = wolniejsze ale dokładniejsze
+
+## 💡 Rozwiązywanie Problemów
+
+**Heatmapa cała czerwona mimo że wydruki OK:**
+- Zdjęcia z bardzo różnych kątów
+- Użyj overlay przy drugim zdjęciu!
+- Albo zmień tryb na "Tylko tekst"
+
+**Niskie podobieństwo mimo że OK:**
+- Sprawdź czy obrazy są tej samej orientacji
+- OCR może mieć problem z fontem
+- Sprawdź heatmapę/prostokąty gdzie dokładnie są różnice
+
+**Za wolno:**
+- Zmniejsz rozdzielczość zdjęć
+- Użyj trybu "Tylko tekst" (najszybszy)
+- Wyłącz inne aplikacje
 
 **Kamera nie działa:**
-- Upewnij się że przyznałeś przeglądarce uprawnienia do kamery
-- Na telefonie: sprawdź czy nie masz zablokowanej kamery dla tej strony w ustawieniach
-- Spróbuj użyć opcji "Wybierz zdjęcie" zamiast robienia zdjęcia
+- Sprawdź uprawnienia w przeglądarce
+- Spróbuj opcji "Wybierz" zamiast kamery
 
-**Overlay nie jest widoczny przy drugim zdjęciu:**
-- Upewnij się że najpierw zrobiłeś/wgrałeś zdjęcie proof'u
-- Overlay pokazuje się tylko przy robieniu DRUGIEGO zdjęcia (wydruk z maszyny)
-- Użyj suwaka przezroczystości aby dostosować widoczność
+**Overlay niewidoczny:**
+- Zwiększ przezroczystość suwakiem
+- Upewnij się że najpierw wgrałeś proof
+- Overlay działa tylko przy drugim zdjęciu
 
-**OCR nie wykrywa tekstu:**
-- Sprawdź jakość zdjęcia
-- Spróbuj zrobić zdjęcie w lepszym oświetleniu
-- Upewnij się że tekst jest ostry
-- Użyj overlay przy drugim zdjęciu aby dopasować perspektywę
+## 🎓 FAQ
 
-**Aplikacja się nie ładuje:**
-- Sprawdź połączenie z internetem (potrzebne za pierwszym razem)
-- Spróbuj odświeżyć stronę
-- Sprawdź czy używasz nowoczesnej przeglądarki (Chrome, Firefox, Safari, Edge)
+**Q: Który tryb wybrać?**
+A: Hybrydowy dla normalnych wydruków. Grafika dla kolorów. Tekst gdy dużo tekstu.
 
-**Wyniki pokazują różnice mimo że wydruki są identyczne:**
-- To normalne - OCR nie jest w 100% dokładny
-- Sprawdź procent podobieństwa - powyżej 90% to bardzo dobry wynik
-- Algorytm LCS i fuzzy matching już ignorują większość drobnych różnic
-- Sprawdź czerwone prostokąty na zdjęciach - pokazują dokładnie gdzie OCR wykrył różnice
-- Porównaj ręcznie te fragmenty aby upewnić się czy są to prawdziwe różnice czy błędy OCR
+**Q: Dlaczego 60% visual + 40% text?**
+A: Grafika i kolory są ważniejsze (większy wpływ wizualny). Tekst można łatwiej poprawić.
 
-**Nie widzę czerwonych prostokątów na zdjęciach:**
-- Sprawdź czy są wykryte jakieś różnice (liczba różnic > 0)
-- Jeśli podobieństwo = 100%, nie będzie prostokątów (brak różnic!)
-- OCR musi wykryć pozycje słów - sprawdź czy zdjęcia są wystarczająco ostre
+**Q: Co to jest heatmapa?**
+A: Kolorowa mapa pokazująca gdzie są różnice. Zielony=OK, Żółty=małe, Czerwony=duże różnice.
+
+**Q: Pixelmatch vs OCR?**
+A: Pixelmatch = piksele (kolory, grafiki). OCR = tekst. Hybrydowy = oba!
+
+**Q: Czy mogę użyć na desktop?**
+A: Tak! Działa wszędzie. Ale mobilny UI jest zoptymalizowany dla telefonu.
+
+**Q: Czy można porównać skan vs zdjęcie?**
+A: Tak! Pixelmatch radzi sobie z różnymi źródłami.
 
 ## 📝 Licencja
 
 MIT License - możesz swobodnie używać i modyfikować
 
-## 🤝 Kontakt
-
-Jeśli masz pytania lub sugestie, stwórz Issue w tym repozytorium.
-
 ---
 
-**Powodzenia w druku! 🖨️**
+**Made with 💪 for flexo printers. Drukuj pewnie! 🖨️**

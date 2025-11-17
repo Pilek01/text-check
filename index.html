@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Text Check - Porównanie Wydruków</title>
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     <style>
@@ -10,90 +10,100 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            padding: 20px;
         }
 
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 10px;
-            font-size: 2.5em;
+            margin-bottom: 5px;
+            font-size: 1.8em;
         }
 
         .subtitle {
             text-align: center;
             color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1em;
+            margin-bottom: 20px;
+            font-size: 0.95em;
         }
 
         .upload-section {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .upload-box {
-            border: 3px dashed #667eea;
+            border: 2px dashed #667eea;
             border-radius: 10px;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             background: #f8f9ff;
-            transition: all 0.3s ease;
-        }
-
-        .upload-box:hover {
-            border-color: #764ba2;
-            background: #f0f1ff;
         }
 
         .upload-box h3 {
             color: #667eea;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            font-size: 1.1em;
         }
 
         .upload-box input[type="file"] {
             display: none;
         }
 
-        .upload-label {
-            display: inline-block;
-            padding: 12px 30px;
-            background: #667eea;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
+        .button-group {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
-        .upload-label:hover {
-            background: #764ba2;
-            transform: translateY(-2px);
+        .upload-label, .camera-label {
+            display: inline-block;
+            padding: 14px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: bold;
+            font-size: 1em;
+            min-width: 140px;
+        }
+
+        .camera-label {
+            background: #4caf50;
+        }
+
+        .upload-label:active, .camera-label:active {
+            transform: scale(0.95);
         }
 
         .preview-img {
             max-width: 100%;
-            max-height: 300px;
-            margin-top: 15px;
-            border-radius: 5px;
+            max-height: 200px;
+            margin-top: 12px;
+            border-radius: 8px;
             display: none;
+            border: 2px solid #667eea;
         }
 
         .preview-img.active {
@@ -102,22 +112,17 @@
 
         .compare-btn {
             display: block;
-            width: 300px;
-            margin: 20px auto;
-            padding: 15px 30px;
+            width: 100%;
+            max-width: 300px;
+            margin: 15px auto;
+            padding: 16px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 50px;
-            font-size: 1.2em;
+            border-radius: 10px;
+            font-size: 1.1em;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .compare-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
 
         .compare-btn:disabled {
@@ -125,10 +130,14 @@
             cursor: not-allowed;
         }
 
+        .compare-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
         .progress-section {
             display: none;
-            margin: 20px 0;
-            padding: 20px;
+            margin: 15px 0;
+            padding: 15px;
             background: #f8f9ff;
             border-radius: 10px;
         }
@@ -146,6 +155,7 @@
             margin-bottom: 5px;
             color: #333;
             font-weight: bold;
+            font-size: 0.9em;
         }
 
         .progress-bar-container {
@@ -165,99 +175,89 @@
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 0.9em;
+            font-size: 0.85em;
             font-weight: bold;
         }
 
         .results-section {
             display: none;
-            margin-top: 30px;
+            margin-top: 20px;
         }
 
         .results-section.active {
             display: block;
         }
 
-        .results-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+        .image-comparison {
+            margin: 20px 0;
         }
 
-        .result-box {
+        .comparison-images {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .image-container {
+            position: relative;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
-            padding: 20px;
-            background: #fafafa;
+            overflow: hidden;
+            background: #000;
         }
 
-        .result-box h3 {
+        .image-container h4 {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.95);
+            padding: 8px 12px;
+            border-radius: 5px;
             color: #667eea;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
+            font-size: 0.9em;
+            z-index: 10;
         }
 
-        .text-content {
-            white-space: pre-wrap;
-            font-family: monospace;
+        .annotated-image {
+            width: 100%;
+            display: block;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-box {
             background: white;
-            padding: 15px;
-            border-radius: 5px;
-            max-height: 400px;
-            overflow-y: auto;
-            line-height: 1.6;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            text-align: center;
         }
 
-        .diff-section {
-            margin-top: 20px;
-            padding: 20px;
-            background: #fff9e6;
-            border-radius: 10px;
-            border: 2px solid #ffc107;
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
         }
 
-        .diff-section h3 {
-            color: #f57c00;
-            margin-bottom: 15px;
-        }
-
-        .diff-content {
-            background: white;
-            padding: 15px;
-            border-radius: 5px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .diff-line {
-            padding: 3px 5px;
-            margin: 2px 0;
-            font-family: monospace;
-            line-height: 1.6;
-        }
-
-        .diff-added {
-            background: #c8e6c9;
-            color: #2e7d32;
-        }
-
-        .diff-removed {
-            background: #ffcdd2;
-            color: #c62828;
-        }
-
-        .diff-unchanged {
+        .stat-label {
             color: #666;
+            margin-top: 3px;
+            font-size: 0.85em;
         }
 
         .status-message {
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
             font-weight: bold;
             text-align: center;
+            font-size: 0.95em;
         }
 
         .status-success {
@@ -278,60 +278,48 @@
             border: 2px solid #c62828;
         }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .stat-box {
-            background: white;
+        .text-diff-section {
+            margin-top: 15px;
             padding: 15px;
+            background: #fff9e6;
             border-radius: 10px;
-            border: 2px solid #e0e0e0;
-            text-align: center;
+            border: 2px solid #ffc107;
         }
 
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
+        .text-diff-section h3 {
+            color: #f57c00;
+            margin-bottom: 10px;
+            font-size: 1.1em;
         }
 
-        .stat-label {
-            color: #666;
-            margin-top: 5px;
+        .diff-content {
+            background: white;
+            padding: 12px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
         }
 
-        @media (max-width: 768px) {
-            .upload-section,
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-
-            h1 {
-                font-size: 1.8em;
-            }
+        .diff-line {
+            padding: 2px 4px;
+            margin: 1px 0;
+            display: inline;
         }
 
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
+        .diff-added {
+            background: #c8e6c9;
+            color: #2e7d32;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .diff-removed {
+            background: #ffcdd2;
+            color: #c62828;
         }
 
-        /* Camera Modal Styles */
+        /* Camera Modal */
         .camera-modal {
             display: none;
             position: fixed;
@@ -339,83 +327,99 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.98);
             z-index: 1000;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
         }
 
         .camera-modal.active {
             display: flex;
         }
 
-        .camera-container {
-            position: relative;
-            width: 90%;
-            max-width: 800px;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
-        }
-
         .camera-header {
             text-align: center;
-            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
         }
 
         .camera-header h2 {
             color: #667eea;
-            margin-bottom: 10px;
+            font-size: 1.3em;
+            margin-bottom: 8px;
         }
 
         .camera-hint {
             color: #f57c00;
-            font-size: 0.9em;
-            padding: 10px;
+            font-size: 0.85em;
+            padding: 8px;
             background: #fff9e6;
             border-radius: 5px;
-            margin-bottom: 10px;
+            margin-top: 8px;
         }
 
-        .video-wrapper {
+        .opacity-control {
+            padding: 10px 15px;
+            background: white;
+            text-align: center;
+        }
+
+        .opacity-control label {
+            display: block;
+            margin-bottom: 6px;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .opacity-slider {
+            width: 80%;
+            max-width: 300px;
+        }
+
+        .video-container {
+            flex: 1;
             position: relative;
-            width: 100%;
             background: #000;
-            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
         }
 
         #camera-video {
             width: 100%;
-            height: auto;
-            display: block;
+            height: 100%;
+            object-fit: contain;
         }
 
-        #overlay-canvas {
+        #overlay-image {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+            opacity: 0.5;
             pointer-events: none;
+            object-fit: contain;
         }
 
         .camera-controls {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
+            gap: 12px;
+            padding: 15px;
+            background: white;
         }
 
         .camera-btn {
-            padding: 12px 30px;
+            padding: 14px 28px;
             border: none;
-            border-radius: 50px;
-            font-size: 1.1em;
+            border-radius: 10px;
+            font-size: 1.05em;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
+            min-width: 140px;
         }
 
         .camera-btn-capture {
@@ -423,85 +427,61 @@
             color: white;
         }
 
-        .camera-btn-capture:hover {
-            background: #45a049;
-            transform: scale(1.05);
-        }
-
         .camera-btn-cancel {
             background: #f44336;
             color: white;
         }
 
-        .camera-btn-cancel:hover {
-            background: #da190b;
-            transform: scale(1.05);
+        .camera-btn:active {
+            transform: scale(0.95);
         }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+        @media (min-width: 768px) {
+            .container {
+                padding: 30px;
+            }
 
-        .camera-label {
-            display: inline-block;
-            padding: 12px 30px;
-            background: #4caf50;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
+            h1 {
+                font-size: 2.5em;
+            }
 
-        .camera-label:hover {
-            background: #45a049;
-            transform: translateY(-2px);
-        }
+            .upload-section {
+                grid-template-columns: 1fr 1fr;
+            }
 
-        .opacity-control {
-            margin: 15px 0;
-            text-align: center;
-        }
+            .comparison-images {
+                grid-template-columns: 1fr 1fr;
+            }
 
-        .opacity-control label {
-            display: block;
-            margin-bottom: 8px;
-            color: #667eea;
-            font-weight: bold;
-        }
-
-        .opacity-slider {
-            width: 80%;
-            max-width: 400px;
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📋 Text Check</h1>
-        <p class="subtitle">Porównaj tekst na wydrubach - Proof vs Maszyna</p>
+        <p class="subtitle">Porównaj tekst na wydrukach - Proof vs Maszyna</p>
 
         <div class="upload-section">
             <div class="upload-box">
                 <h3>📄 Proof (Wydruk komputerowy)</h3>
                 <div class="button-group">
-                    <label for="proof-upload" class="upload-label">📁 Wybierz zdjęcie</label>
-                    <button id="proof-camera-btn" class="camera-label">📷 Zrób zdjęcie</button>
+                    <label for="proof-upload" class="upload-label">📁 Wybierz</label>
+                    <button id="proof-camera-btn" class="camera-label">📷 Zrób foto</button>
                 </div>
-                <input type="file" id="proof-upload" accept="image/*">
+                <input type="file" id="proof-upload" accept="image/*" capture="environment">
                 <img id="proof-preview" class="preview-img" alt="Proof preview">
             </div>
 
             <div class="upload-box">
                 <h3>🖨️ Wydruk z maszyny</h3>
                 <div class="button-group">
-                    <label for="machine-upload" class="upload-label">📁 Wybierz zdjęcie</label>
-                    <button id="machine-camera-btn" class="camera-label">📷 Zrób zdjęcie</button>
+                    <label for="machine-upload" class="upload-label">📁 Wybierz</label>
+                    <button id="machine-camera-btn" class="camera-label">📷 Zrób foto</button>
                 </div>
-                <input type="file" id="machine-upload" accept="image/*">
+                <input type="file" id="machine-upload" accept="image/*" capture="environment">
                 <img id="machine-preview" class="preview-img" alt="Machine preview">
             </div>
         </div>
@@ -528,36 +508,39 @@
 
             <div class="stats">
                 <div class="stat-box">
-                    <div class="stat-number" id="stat-proof-chars">0</div>
-                    <div class="stat-label">Znaków w Proof</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-number" id="stat-machine-chars">0</div>
-                    <div class="stat-label">Znaków w Wydruku</div>
+                    <div class="stat-number" id="stat-similarity">0%</div>
+                    <div class="stat-label">Podobieństwo</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-number" id="stat-differences">0</div>
                     <div class="stat-label">Różnic</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-number" id="stat-similarity">0%</div>
-                    <div class="stat-label">Podobieństwo</div>
+                    <div class="stat-number" id="stat-proof-words">0</div>
+                    <div class="stat-label">Słów w Proof</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="stat-machine-words">0</div>
+                    <div class="stat-label">Słów w Maszynie</div>
                 </div>
             </div>
 
-            <div class="results-grid">
-                <div class="result-box">
-                    <h3>📄 Tekst z Proof</h3>
-                    <div id="proof-text" class="text-content"></div>
-                </div>
-                <div class="result-box">
-                    <h3>🖨️ Tekst z maszyny</h3>
-                    <div id="machine-text" class="text-content"></div>
+            <div class="image-comparison">
+                <h3 style="color: #667eea; margin-bottom: 10px;">📸 Wizualizacja różnic</h3>
+                <div class="comparison-images">
+                    <div class="image-container">
+                        <h4>📄 Proof</h4>
+                        <canvas id="proof-canvas" class="annotated-image"></canvas>
+                    </div>
+                    <div class="image-container">
+                        <h4>🖨️ Maszyna</h4>
+                        <canvas id="machine-canvas" class="annotated-image"></canvas>
+                    </div>
                 </div>
             </div>
 
-            <div class="diff-section">
-                <h3>⚠️ Wykryte różnice</h3>
+            <div class="text-diff-section">
+                <h3>📝 Szczegółowe różnice tekstowe</h3>
                 <div id="diff-content" class="diff-content"></div>
             </div>
         </div>
@@ -565,28 +548,26 @@
 
     <!-- Camera Modal -->
     <div id="camera-modal" class="camera-modal">
-        <div class="camera-container">
-            <div class="camera-header">
-                <h2 id="camera-title">📷 Zrób zdjęcie</h2>
-                <div id="camera-hint" class="camera-hint" style="display: none;">
-                    💡 Spróbuj dopasować perspektywę do pierwszego zdjęcia używając półprzezroczystego podglądu
-                </div>
+        <div class="camera-header">
+            <h2 id="camera-title">📷 Zrób zdjęcie</h2>
+            <div id="camera-hint" class="camera-hint" style="display: none;">
+                💡 Dopasuj perspektywę do półprzezroczystego podglądu proof'u
             </div>
+        </div>
 
-            <div class="opacity-control" id="opacity-control" style="display: none;">
-                <label for="overlay-opacity">Przezroczystość podglądu pierwszego zdjęcia: <span id="opacity-value">50%</span></label>
-                <input type="range" id="overlay-opacity" class="opacity-slider" min="0" max="100" value="50">
-            </div>
+        <div class="opacity-control" id="opacity-control" style="display: none;">
+            <label for="overlay-opacity">Przezroczystość podglądu: <span id="opacity-value">50%</span></label>
+            <input type="range" id="overlay-opacity" class="opacity-slider" min="0" max="100" value="50">
+        </div>
 
-            <div class="video-wrapper">
-                <video id="camera-video" autoplay playsinline></video>
-                <canvas id="overlay-canvas"></canvas>
-            </div>
+        <div class="video-container">
+            <video id="camera-video" autoplay playsinline muted></video>
+            <img id="overlay-image" style="display: none;" alt="Overlay">
+        </div>
 
-            <div class="camera-controls">
-                <button id="capture-btn" class="camera-btn camera-btn-capture">📸 Zrób zdjęcie</button>
-                <button id="cancel-camera-btn" class="camera-btn camera-btn-cancel">❌ Anuluj</button>
-            </div>
+        <div class="camera-controls">
+            <button id="capture-btn" class="camera-btn camera-btn-capture">📸 Zrób zdjęcie</button>
+            <button id="cancel-camera-btn" class="camera-btn camera-btn-cancel">❌ Anuluj</button>
         </div>
     </div>
 
@@ -594,8 +575,8 @@
         // State
         let proofImage = null;
         let machineImage = null;
-        let proofText = '';
-        let machineText = '';
+        let proofData = null;
+        let machineData = null;
         let currentCameraType = null;
         let cameraStream = null;
 
@@ -615,7 +596,7 @@
         const machineCameraBtn = document.getElementById('machine-camera-btn');
         const cameraModal = document.getElementById('camera-modal');
         const cameraVideo = document.getElementById('camera-video');
-        const overlayCanvas = document.getElementById('overlay-canvas');
+        const overlayImage = document.getElementById('overlay-image');
         const captureBtn = document.getElementById('capture-btn');
         const cancelCameraBtn = document.getElementById('cancel-camera-btn');
         const cameraHint = document.getElementById('camera-hint');
@@ -655,7 +636,6 @@
                 machinePreview.classList.add('active');
             }
 
-            // Enable compare button if both images are loaded
             if (proofImage && machineImage) {
                 compareBtn.disabled = false;
             }
@@ -665,17 +645,20 @@
             currentCameraType = type;
             cameraModal.classList.add('active');
 
-            // Show overlay controls only when taking second photo (machine)
+            // Show overlay only when taking second photo
             if (type === 'machine' && proofImage) {
                 cameraHint.style.display = 'block';
                 opacityControl.style.display = 'block';
+                overlayImage.src = proofImage;
+                overlayImage.style.display = 'block';
+                overlayImage.style.opacity = overlayOpacity.value / 100;
             } else {
                 cameraHint.style.display = 'none';
                 opacityControl.style.display = 'none';
+                overlayImage.style.display = 'none';
             }
 
             try {
-                // Request camera with rear camera preference for mobile
                 cameraStream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: { ideal: 'environment' },
@@ -685,16 +668,9 @@
                 });
 
                 cameraVideo.srcObject = cameraStream;
-
-                // Wait for video to be ready and draw overlay if needed
-                cameraVideo.onloadedmetadata = () => {
-                    if (type === 'machine' && proofImage) {
-                        drawOverlay();
-                    }
-                };
             } catch (error) {
                 console.error('Error accessing camera:', error);
-                alert('Nie można uzyskać dostępu do kamery. Upewnij się, że przyznałeś uprawnienia do kamery.');
+                alert('Nie można uzyskać dostępu do kamery. Sprawdź uprawnienia.');
                 closeCamera();
             }
         }
@@ -702,48 +678,7 @@
         function updateOverlayOpacity() {
             const value = overlayOpacity.value;
             opacityValue.textContent = value + '%';
-            if (currentCameraType === 'machine' && proofImage) {
-                drawOverlay();
-            }
-        }
-
-        function drawOverlay() {
-            const video = cameraVideo;
-            const canvas = overlayCanvas;
-            const ctx = canvas.getContext('2d');
-
-            // Set canvas size to match video
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw proof image with opacity
-            const opacity = overlayOpacity.value / 100;
-            ctx.globalAlpha = opacity;
-
-            // Load and draw the proof image
-            const img = new Image();
-            img.onload = () => {
-                // Calculate scaling to fit the image
-                const scale = Math.min(
-                    canvas.width / img.width,
-                    canvas.height / img.height
-                );
-
-                const x = (canvas.width - img.width * scale) / 2;
-                const y = (canvas.height - img.height * scale) / 2;
-
-                ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-                ctx.globalAlpha = 1;
-            };
-            img.src = proofImage;
-
-            // Continue updating overlay
-            if (cameraModal.classList.contains('active')) {
-                requestAnimationFrame(drawOverlay);
-            }
+            overlayImage.style.opacity = value / 100;
         }
 
         function capturePhoto() {
@@ -756,7 +691,7 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0);
 
-            const imageData = canvas.toDataURL('image/jpeg', 0.9);
+            const imageData = canvas.toDataURL('image/jpeg', 0.95);
             setImage(currentCameraType, imageData);
 
             closeCamera();
@@ -771,10 +706,6 @@
             cameraModal.classList.remove('active');
             cameraVideo.srcObject = null;
             currentCameraType = null;
-
-            // Clear overlay canvas
-            const ctx = overlayCanvas.getContext('2d');
-            ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
         }
 
         async function compareImages() {
@@ -783,16 +714,16 @@
             resultsSection.classList.remove('active');
 
             try {
-                // Process both images
-                proofText = await performOCR(proofImage, 'proof');
-                machineText = await performOCR(machineImage, 'machine');
+                // Process both images with OCR
+                proofData = await performOCR(proofImage, 'proof');
+                machineData = await performOCR(machineImage, 'machine');
 
-                // Compare texts
+                // Compare and display results
                 displayResults();
                 compareBtn.disabled = false;
             } catch (error) {
                 console.error('Error:', error);
-                alert('Wystąpił błąd podczas przetwarzania zdjęć: ' + error.message);
+                alert('Wystąpił błąd podczas przetwarzania: ' + error.message);
                 compareBtn.disabled = false;
                 progressSection.classList.remove('active');
             }
@@ -811,102 +742,86 @@
                 }
             });
 
-            const { data: { text } } = await worker.recognize(imageData);
+            const result = await worker.recognize(imageData);
             await worker.terminate();
 
             progressBar.style.width = '100%';
             progressBar.textContent = '100%';
 
-            return text.trim();
+            return result.data;
         }
 
         function displayResults() {
-            // Show results section
             resultsSection.classList.add('active');
 
-            // Display texts
-            document.getElementById('proof-text').textContent = proofText;
-            document.getElementById('machine-text').textContent = machineText;
+            const proofText = proofData.text.trim();
+            const machineText = machineData.text.trim();
 
-            // Calculate stats
-            const proofChars = proofText.length;
-            const machineChars = machineText.length;
-
-            // Normalize texts for comparison (remove extra whitespace)
+            // Normalize and compare
             const normalizedProof = normalizeText(proofText);
             const normalizedMachine = normalizeText(machineText);
 
-            // Calculate differences
-            const diff = calculateDiff(normalizedProof, normalizedMachine);
+            // Calculate diff using better algorithm
+            const diff = computeDiff(normalizedProof, normalizedMachine);
             const similarity = calculateSimilarity(normalizedProof, normalizedMachine);
 
             // Update stats
-            document.getElementById('stat-proof-chars').textContent = proofChars;
-            document.getElementById('stat-machine-chars').textContent = machineChars;
-            document.getElementById('stat-differences').textContent = diff.differences;
+            const proofWords = normalizedProof.split(/\s+/).filter(w => w.length > 0).length;
+            const machineWords = normalizedMachine.split(/\s+/).filter(w => w.length > 0).length;
+
             document.getElementById('stat-similarity').textContent = similarity + '%';
+            document.getElementById('stat-differences').textContent = diff.diffCount;
+            document.getElementById('stat-proof-words').textContent = proofWords;
+            document.getElementById('stat-machine-words').textContent = machineWords;
 
-            // Display diff
-            displayDiff(diff);
-
-            // Status message
+            // Display status
             const statusDiv = document.getElementById('status-message');
             if (similarity >= 95) {
                 statusDiv.className = 'status-message status-success';
                 statusDiv.textContent = '✅ Wydruki są praktycznie identyczne! Możesz kontynuować drukowanie.';
             } else if (similarity >= 85) {
                 statusDiv.className = 'status-message status-warning';
-                statusDiv.textContent = '⚠️ Wykryto niewielkie różnice. Sprawdź poniżej szczegóły.';
+                statusDiv.textContent = '⚠️ Wykryto niewielkie różnice. Sprawdź szczegóły poniżej.';
             } else {
                 statusDiv.className = 'status-message status-error';
                 statusDiv.textContent = '❌ Wykryto znaczące różnice! Sprawdź dokładnie wydruki.';
             }
+
+            // Display text diff
+            displayTextDiff(diff.operations);
+
+            // Draw annotated images
+            drawAnnotatedImage('proof', proofImage, proofData, diff.proofDiffs);
+            drawAnnotatedImage('machine', machineImage, machineData, diff.machineDiffs);
         }
 
         function normalizeText(text) {
-            // Advanced normalization for better comparison
             return text
-                .toLowerCase() // Case insensitive
-                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '') // Remove punctuation
-                .replace(/\s+/g, ' ') // Normalize whitespace
-                .replace(/[0oO]/g, '0') // Normalize similar characters
-                .replace(/[1lI]/g, '1')
+                .toLowerCase()
+                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()""'']/g, '')
+                .replace(/\s+/g, ' ')
+                .replace(/[0oO]/g, '0')
+                .replace(/[1lI|]/g, '1')
                 .trim();
         }
 
-        function fuzzyMatch(word1, word2, threshold = 0.8) {
-            // Check if two words are similar enough using character-level similarity
-            if (word1 === word2) return true;
-            if (Math.abs(word1.length - word2.length) > 3) return false;
-
-            const distance = levenshteinDistance(word1, word2);
-            const maxLen = Math.max(word1.length, word2.length);
-            const similarity = 1 - (distance / maxLen);
-
-            return similarity >= threshold;
-        }
-
         function calculateSimilarity(text1, text2) {
+            if (!text1 || !text2) return 0;
             const longer = text1.length > text2.length ? text1 : text2;
             const shorter = text1.length > text2.length ? text2 : text1;
-
             if (longer.length === 0) return 100;
-
-            const editDistance = levenshteinDistance(longer, shorter);
-            return Math.round((1 - editDistance / longer.length) * 100);
+            const distance = levenshteinDistance(longer, shorter);
+            return Math.round((1 - distance / longer.length) * 100);
         }
 
         function levenshteinDistance(str1, str2) {
             const matrix = [];
-
             for (let i = 0; i <= str2.length; i++) {
                 matrix[i] = [i];
             }
-
             for (let j = 0; j <= str1.length; j++) {
                 matrix[0][j] = j;
             }
-
             for (let i = 1; i <= str2.length; i++) {
                 for (let j = 1; j <= str1.length; j++) {
                     if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
@@ -920,94 +835,130 @@
                     }
                 }
             }
-
             return matrix[str2.length][str1.length];
         }
 
-        function calculateDiff(text1, text2) {
-            // Split into words for better comparison
+        // Better diff algorithm using Myers algorithm variant
+        function computeDiff(text1, text2) {
             const words1 = text1.split(/\s+/).filter(w => w.length > 0);
             const words2 = text2.split(/\s+/).filter(w => w.length > 0);
 
-            const diff = [];
-            let differences = 0;
+            // Create LCS (Longest Common Subsequence) table
+            const m = words1.length;
+            const n = words2.length;
+            const lcs = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
 
-            // Use dynamic programming for better alignment
-            const len1 = words1.length;
-            const len2 = words2.length;
-
-            // Simple alignment: try to match words using fuzzy matching
-            let i = 0, j = 0;
-
-            while (i < len1 || j < len2) {
-                if (i >= len1) {
-                    // Only words2 left
-                    diff.push({ type: 'added', text: words2[j] });
-                    differences++;
-                    j++;
-                } else if (j >= len2) {
-                    // Only words1 left
-                    diff.push({ type: 'removed', text: words1[i] });
-                    differences++;
-                    i++;
-                } else if (words1[i] === words2[j] || fuzzyMatch(words1[i], words2[j])) {
-                    // Words match (exact or fuzzy)
-                    diff.push({ type: 'unchanged', text: words1[i] });
-                    i++;
-                    j++;
-                } else {
-                    // Check if next word matches (to handle insertions/deletions)
-                    const nextMatch1 = j + 1 < len2 && (words1[i] === words2[j + 1] || fuzzyMatch(words1[i], words2[j + 1]));
-                    const nextMatch2 = i + 1 < len1 && (words1[i + 1] === words2[j] || fuzzyMatch(words1[i + 1], words2[j]));
-
-                    if (nextMatch1 && !nextMatch2) {
-                        // Word was added in text2
-                        diff.push({ type: 'added', text: words2[j] });
-                        differences++;
-                        j++;
-                    } else if (nextMatch2 && !nextMatch1) {
-                        // Word was removed from text1
-                        diff.push({ type: 'removed', text: words1[i] });
-                        differences++;
-                        i++;
+            for (let i = 1; i <= m; i++) {
+                for (let j = 1; j <= n; j++) {
+                    if (fuzzyMatch(words1[i - 1], words2[j - 1])) {
+                        lcs[i][j] = lcs[i - 1][j - 1] + 1;
                     } else {
-                        // Words are different
-                        diff.push({ type: 'removed', text: words1[i] });
-                        diff.push({ type: 'added', text: words2[j] });
-                        differences += 2;
-                        i++;
-                        j++;
+                        lcs[i][j] = Math.max(lcs[i - 1][j], lcs[i][j - 1]);
                     }
                 }
             }
 
-            return { diff, differences };
+            // Backtrack to find differences
+            const operations = [];
+            const proofDiffs = new Set();
+            const machineDiffs = new Set();
+            let i = m, j = n;
+            let diffCount = 0;
+
+            while (i > 0 || j > 0) {
+                if (i > 0 && j > 0 && fuzzyMatch(words1[i - 1], words2[j - 1])) {
+                    operations.unshift({ type: 'equal', word: words1[i - 1] });
+                    i--;
+                    j--;
+                } else if (j > 0 && (i === 0 || lcs[i][j - 1] >= lcs[i - 1][j])) {
+                    operations.unshift({ type: 'insert', word: words2[j - 1] });
+                    machineDiffs.add(j - 1);
+                    diffCount++;
+                    j--;
+                } else if (i > 0 && (j === 0 || lcs[i][j - 1] < lcs[i - 1][j])) {
+                    operations.unshift({ type: 'delete', word: words1[i - 1] });
+                    proofDiffs.add(i - 1);
+                    diffCount++;
+                    i--;
+                }
+            }
+
+            return { operations, proofDiffs, machineDiffs, diffCount };
         }
 
-        function displayDiff(diffResult) {
+        function fuzzyMatch(word1, word2, threshold = 0.75) {
+            if (word1 === word2) return true;
+            if (!word1 || !word2) return false;
+            if (Math.abs(word1.length - word2.length) > 3) return false;
+
+            const distance = levenshteinDistance(word1, word2);
+            const maxLen = Math.max(word1.length, word2.length);
+            const similarity = 1 - (distance / maxLen);
+
+            return similarity >= threshold;
+        }
+
+        function displayTextDiff(operations) {
             const diffContainer = document.getElementById('diff-content');
             diffContainer.innerHTML = '';
 
-            if (diffResult.differences === 0) {
-                diffContainer.innerHTML = '<p style="color: green; font-weight: bold;">✅ Nie wykryto żadnych różnic!</p>';
+            if (operations.every(op => op.type === 'equal')) {
+                diffContainer.innerHTML = '<p style="color: green; font-weight: bold;">✅ Nie wykryto różnic w tekście!</p>';
                 return;
             }
 
-            diffResult.diff.forEach(item => {
+            operations.forEach(op => {
                 const span = document.createElement('span');
-                span.className = `diff-line diff-${item.type}`;
+                span.className = 'diff-line';
 
-                if (item.type === 'removed') {
-                    span.textContent = `- ${item.text}`;
-                } else if (item.type === 'added') {
-                    span.textContent = `+ ${item.text}`;
+                if (op.type === 'delete') {
+                    span.className += ' diff-removed';
+                    span.textContent = '- ' + op.word;
+                } else if (op.type === 'insert') {
+                    span.className += ' diff-added';
+                    span.textContent = '+ ' + op.word;
                 } else {
-                    span.textContent = item.text;
+                    span.textContent = op.word;
                 }
 
                 diffContainer.appendChild(span);
                 diffContainer.appendChild(document.createTextNode(' '));
             });
+        }
+
+        function drawAnnotatedImage(type, imageData, ocrData, diffIndices) {
+            const canvas = document.getElementById(type + '-canvas');
+            const ctx = canvas.getContext('2d');
+
+            const img = new Image();
+            img.onload = () => {
+                // Set canvas size
+                const maxWidth = canvas.parentElement.clientWidth - 4;
+                const scale = maxWidth / img.width;
+                canvas.width = img.width;
+                canvas.height = img.height;
+                canvas.style.width = maxWidth + 'px';
+                canvas.style.height = (img.height * scale) + 'px';
+
+                // Draw image
+                ctx.drawImage(img, 0, 0);
+
+                // Draw bounding boxes for differences
+                if (ocrData.words && diffIndices.size > 0) {
+                    ctx.strokeStyle = '#ff0000';
+                    ctx.lineWidth = 3;
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+
+                    ocrData.words.forEach((wordData, index) => {
+                        if (diffIndices.has(index)) {
+                            const bbox = wordData.bbox;
+                            ctx.fillRect(bbox.x0, bbox.y0, bbox.x1 - bbox.x0, bbox.y1 - bbox.y0);
+                            ctx.strokeRect(bbox.x0, bbox.y0, bbox.x1 - bbox.x0, bbox.y1 - bbox.y0);
+                        }
+                    });
+                }
+            };
+            img.src = imageData;
         }
     </script>
 </body>

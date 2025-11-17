@@ -9,13 +9,15 @@ Aplikacja rozwiązuje problem czasochłonnego ręcznego porównywania wydruków.
 ## ✨ Funkcje
 
 - **📷 Zdjęcia z kamery** - Rób zdjęcia bezpośrednio w aplikacji bez potrzeby galerii
-- **🎯 Inteligentny overlay** - Przy robieniu drugiego zdjęcia widzisz półprzezroczyste pierwsze zdjęcie - łatwo dopasować perspektywę!
+- **🎯 Działający overlay** - Przy robieniu drugiego zdjęcia widzisz półprzezroczyste pierwsze zdjęcie na podglądzie kamery!
+- **🖼️ Wizualne oznaczenia różnic** - Czerwone prostokąty pokazują dokładnie gdzie są różnice na zdjęciach
 - **🤖 OCR (Rozpoznawanie tekstu)** - Automatyczne wykrywanie tekstu na zdjęciach używając Tesseract.js
-- **🧠 Mądre porównywanie** - Fuzzy matching, ignorowanie wielkości liter i interpunkcji
-- **🎨 Wizualizacja różnic** - Kolorowe oznaczenie tego co się różni
-- **📊 Statystyki** - Procent podobieństwa, liczba różnic, itp.
-- **💻 Działa w przeglądarce** - Nie wymaga instalacji, wszystko działa lokalnie
-- **🔒 Prywatność** - Zdjęcia nie są wysyłane na żaden serwer, wszystko przetwarza się w Twojej przeglądarce
+- **🧠 Zaawansowane porównywanie** - Algorytm LCS radzi sobie z brakami i przesunięciami tekstu
+- **🔍 Fuzzy matching** - Ignoruje drobne różnice (wielkość liter, interpunkcja, błędy OCR)
+- **📊 Szczegółowe statystyki** - Podobieństwo, liczba różnic, liczba słów
+- **📱 Mobilny UI** - Duże przyciski, łatwe w użyciu na telefonie
+- **💻 Działa offline** - Po pierwszym załadowaniu nie wymaga internetu
+- **🔒 Prywatność** - Zdjęcia nie są wysyłane na żaden serwer, wszystko w przeglądarce
 
 ## 🚀 Jak używać
 
@@ -50,19 +52,31 @@ Aplikacja rozwiązuje problem czasochłonnego ręcznego porównywania wydruków.
 
 ## 🎨 Jak to działa
 
-1. **Kamera z overlay** - Przy robieniu drugiego zdjęcia, pierwsze zdjęcie jest wyświetlane jako półprzezroczysta nakładka, co pozwala dopasować perspektywę
-2. **OCR (Optical Character Recognition)** - Aplikacja używa Tesseract.js do rozpoznania tekstu na obu zdjęciach
-3. **Zaawansowana normalizacja** - Tekst jest inteligentnie normalizowany:
+1. **Kamera z overlay** - Przy robieniu drugiego zdjęcia, pierwsze zdjęcie jest wyświetlane jako półprzezroczysta nakładka na podglądzie kamery (możesz dostosować przezroczystość suwakiem)
+
+2. **OCR (Optical Character Recognition)** - Tesseract.js rozpoznaje tekst i pozycje słów na obu zdjęciach
+
+3. **Normalizacja tekstu** - Inteligentne czyszczenie:
    - Ignorowanie wielkości liter (A = a)
    - Usuwanie interpunkcji
-   - Normalizacja podobnych znaków (O/0, I/1/l)
-   - Usuwanie nadmiarowych białych znaków
-4. **Fuzzy matching** - Algorytm toleruje drobne różnice w słowach (np. błędy OCR)
-5. **Inteligentne dopasowanie** - Zaawansowany algorytm dopasowuje słowa nawet gdy są w różnej kolejności lub brakuje niektórych
-6. **Wizualizacja** - Różnice są oznaczane kolorami:
-   - 🔴 Czerwony = usunięte (jest w proof, brak w wydruku)
-   - 🟢 Zielony = dodane (brak w proof, jest w wydruku)
-   - ⚪ Szary = bez zmian
+   - Normalizacja podobnych znaków (O/0, I/1/l/|)
+   - Usuwanie nadmiarowych spacji
+
+4. **Algorytm LCS (Longest Common Subsequence)** - Znajduje najdłuższy wspólny podciąg słów:
+   - Radzi sobie z brakami (np. brak "1" na początku)
+   - Wykrywa wstawienia i usunięcia
+   - Nie gubi się przy przesunięciach tekstu
+
+5. **Fuzzy matching** - Toleruje drobne różnice (podobieństwo 75%+):
+   - "Helo" ≈ "Hello"
+   - Kompensuje błędy OCR
+
+6. **Wizualizacja**:
+   - **Na zdjęciach**: Czerwone prostokąty wokół różniących się słów
+   - **W tekście**:
+     - 🔴 Czerwony = usunięte (jest w proof, brak w wydruku)
+     - 🟢 Zielony = dodane (brak w proof, jest w wydruku)
+     - ⚪ Szary = bez zmian
 
 ## 📊 Interpretacja wyników
 
@@ -72,10 +86,12 @@ Aplikacja rozwiązuje problem czasochłonnego ręcznego porównywania wydruków.
 
 ## 🔧 Technologie
 
-- **Tesseract.js** - OCR engine do rozpoznawania tekstu
+- **Tesseract.js** - OCR engine do rozpoznawania tekstu z pozycjami słów
 - **JavaScript (ES6+)** - Logika aplikacji
-- **HTML5 + CSS3** - Interface użytkownika
-- **Algorytm Levenshtein** - Porównywanie tekstów
+- **HTML5 Canvas** - Rysowanie oznaczeń na zdjęciach
+- **CSS3** - Responsywny interface użytkownika
+- **Algorytm LCS** - Inteligentne porównywanie z obsługą przesunięć
+- **Levenshtein Distance** - Fuzzy matching i podobieństwo tekstów
 
 ## ⚠️ Ograniczenia
 
@@ -113,8 +129,14 @@ Aplikacja rozwiązuje problem czasochłonnego ręcznego porównywania wydruków.
 **Wyniki pokazują różnice mimo że wydruki są identyczne:**
 - To normalne - OCR nie jest w 100% dokładny
 - Sprawdź procent podobieństwa - powyżej 90% to bardzo dobry wynik
-- Nowy algorytm fuzzy matching już ignoruje drobne różnice
-- Porównaj ręcznie podświetlone fragmenty aby upewnić się czy są to prawdziwe różnice
+- Algorytm LCS i fuzzy matching już ignorują większość drobnych różnic
+- Sprawdź czerwone prostokąty na zdjęciach - pokazują dokładnie gdzie OCR wykrył różnice
+- Porównaj ręcznie te fragmenty aby upewnić się czy są to prawdziwe różnice czy błędy OCR
+
+**Nie widzę czerwonych prostokątów na zdjęciach:**
+- Sprawdź czy są wykryte jakieś różnice (liczba różnic > 0)
+- Jeśli podobieństwo = 100%, nie będzie prostokątów (brak różnic!)
+- OCR musi wykryć pozycje słów - sprawdź czy zdjęcia są wystarczająco ostre
 
 ## 📝 Licencja
 
